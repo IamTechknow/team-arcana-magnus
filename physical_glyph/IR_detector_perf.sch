@@ -9040,8 +9040,8 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <part name="T1" library="opto-trans-siemens" library_urn="urn:adsk.eagle:library:317" deviceset="BP103" device="" package3d_urn="urn:adsk.eagle:package:21787/1"/>
 <part name="R2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="1k"/>
 <part name="R3" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="10k"/>
-<part name="R4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="2M"/>
-<part name="R7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="1M"/>
+<part name="R4" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="1M"/>
+<part name="R7" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="333333"/>
 <part name="R11" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-US_" device="0204/2V" package3d_urn="urn:adsk.eagle:package:23495/1" value="1M"/>
 <part name="C3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="C-EU" device="025-024X044" package3d_urn="urn:adsk.eagle:package:26149/1" value="0.1uF"/>
 <part name="C4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="C-EU" device="025-024X044" package3d_urn="urn:adsk.eagle:package:26149/1" value="10uF"/>
@@ -9071,9 +9071,9 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <text x="40.64" y="101.6" size="1.778" layer="91">Amp A and D: 10 gain stage 
 Amp B: Peak Detector
 Amp C: Split Rail Buffer</text>
-<text x="78.74" y="-27.94" size="1.778" layer="91">R3 = 1M
+<text x="78.74" y="-27.94" size="1.778" layer="91">R3 = 333333
 R4 = 3.9k
-R1 = 2M
+R1 = 1M
 R2 = 1M</text>
 <text x="12.7" y="-58.42" size="1.778" layer="91">RC value = peak detector "leak"</text>
 <text x="78.74" y="-15.24" size="1.778" layer="91">Inverting Schmitt Trigger</text>
