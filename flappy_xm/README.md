@@ -20,14 +20,12 @@ The Flappy XM Game is a cooperative game between two players to reach the center
 * Network connected device, using Raspberry Pi
 * [Two 16x32 RGB LED Matrix panel](https://www.adafruit.com/product/420)
 * [Two Arcade style buttons](https://www.adafruit.com/product/476)
-* [Crimped cables for the buttons](https://www.adafruit.com/product/1152)
 * Perfboard, 20-26 gauge wire to securely connect the panels with the Pi
 
 ## Setup Information
-The microcontroller system must support 20 GPIO pins, 6 data pins for both panels each, 6 control pins to be shared amongst both panels, which means they are updated at the same time. Two pins for buttons. [Wiring information here](https://learn.adafruit.com/32x16-32x32-rgb-led-matrix/connecting-with-jumper-wires)
+The microcontroller system must support 14 GPIO pins, 6 data pins for color, 6 control pins, and two pins for buttons. [Wiring information here](https://github.com/hzeller/rpi-rgb-led-matrix/blob/master/wiring.md)
 
-Uses a Raspberry Pi 1 Model B with Stretch Lite, overclocked from 700 MHz to 900 MHz, turbo mode on, 8 GB SDHC card
-Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev 
-Python modules: paho-mqtt
+Uses a Raspberry Pi 1 Model B with Stretch Lite, overclocked from 700 MHz to 950 MHz (High Mode), 8 GB SDHC card
+Packages installed for Mosquitto: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1
 
-Manually installed packages: pigpio, Eclipse Paho for C
+Manually installed packages: pigpio, Eclipse Paho for C, rpi-rgb-led-matrix
