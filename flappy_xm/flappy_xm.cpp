@@ -13,9 +13,10 @@ using rgb_matrix::RGBMatrix;
 enum State {IDLE, GAME, WIN_ANIM};
 
 //Game settings
+State gameState = IDLE;
 float fps = 3.0f;
 Color cyan(0, 255, 255);
-float xmLeftY = 7.0f, xmRightY = COLS - 7.0f;
+float xmLeftY = 7.0f, xmRightY = 7.0f;
 float obstacleLeftX = 32.0f, obstacleRightX = 0f;
 float gapLeftY = 8.0f, gapRightY = 8.0f;
 int delay_speed_usec = 1000000 / speed;
@@ -26,27 +27,62 @@ static void InterruptHandler(int signo) {
   interrupt_received = true;
 }
 
+//Button interrupt
 void btnInt(int gpio, int level, uint32_t tick)
 {
-   static int c=1;
-   printf("Interrupt #%d level %d at %u\n", c, level, tick);
-   c++;
+    static int c=1;
+    printf("Interrupt #%d level %d at %u\n", c, level, tick);
+    c++;
+   
+    if(gameState == IDLE && level == 1)
+		resetGame();
+    else if(level == 1) { //rising edge, did not timeout
+        if(gpio == BTN1PIN)
+			jump1();
+		else
+			jump2();
+	}
 }
 
-void drawObstacle() {
+void drawObstacles() {
 	
 }
 
+//Returns whether or not there is a collision and the game should end
 bool checkCollision() {
-	
+	return xmLeftY < gapLeftY || xmLeftY > gapLeftY + 7 || xmRightY < gapRightY || xmRightY > gapRightY + 7
 }
 
 void updateGame() {
+	xmLeftY += 1.0f;
+	xmRightY += 1.0f;
 	
+	if(xmLeftY >= ROWS || xmRightY >= ROWS)
+		gameOver();
 }
 
-void jump() {
-	
+void gameOver() {
+	gameState = IDLE;
+}
+
+void resetGame() {
+	xmLeftY = 7.0f;
+	xmRightY = 7.0f;
+	obstacleLeftX = 32.0f;
+	obstacleRightX = 0f;
+	gapLeftY = 8.0f; 
+	gapRightY = 8.0f;
+	gameState = GAME;
+}
+
+void jump1() {
+	if(xmLeftY > 0)
+		xmLeftY -= 0.5;
+}
+
+void jump2() {
+	if(xmRightY > 0)
+		xmRightY -= 0.5;
 }
 
 int main(int argc, char **argv) {
@@ -88,7 +124,7 @@ int main(int argc, char **argv) {
 		offscreen_canvas->Clear();
 		
 		//Draw current game data here!
-		
+		//updateGame();
 		
 		usleep(delay_speed_usec);
 		

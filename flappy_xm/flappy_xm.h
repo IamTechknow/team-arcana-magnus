@@ -14,6 +14,10 @@ bool checkCollision();
 
 void updateGame();
 
-void jump();
+void jump1();
+
+void jump2();
+
+void gameOver();
 
 #endif
