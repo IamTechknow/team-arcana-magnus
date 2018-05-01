@@ -15,7 +15,15 @@ A central device serves as the subscriber for the Techultu API and the publisher
 * Raspberry Pi 3 Model B (not the new B+)
 * [USB DMX Interface](https://www.amazon.com/gp/product/B00T8OKM98/)
 * [PAR Lights](https://www.amazon.com/gp/product/B012IDO3VS/) and XLR cables
-* Portable Router, must be USB Powered, can be TP-Link MR3040 or GLI AR150
+* Portable Router, we are using the TP-Link MR3040
+
+## MQTT Events
+| Action           | Topic                  |
+| ---------------- |------------------------|
+| Faction Change   | portal/factionChange   |
+| Level Change     | portal/levelChange     |
+| Portal Damaged   | portal/portalDamaged   |
+| Portal Recharged | portal/portalRecharged |
 
 ## Setup Information
 Uses a Raspberry Pi 3 Model B with Stretch Lite, 16 GB microSD card
