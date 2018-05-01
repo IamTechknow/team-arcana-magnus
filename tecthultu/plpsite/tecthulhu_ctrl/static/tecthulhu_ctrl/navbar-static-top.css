@@ -1,0 +1,15 @@
+h1 {
+  text-align: center;
+}
+
+.navbar-static-top {
+  margin-bottom: 19px;
+}
+
+p {
+  margin: 0 0 0 32px;
+}
+
+.pagination {
+  margin-left: 20px;
+}

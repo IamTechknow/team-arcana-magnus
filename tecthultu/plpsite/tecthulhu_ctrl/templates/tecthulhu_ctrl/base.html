@@ -1,0 +1,27 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        
+        <link rel="stylesheet" type="text/css" href=" {% static 'webpage/bootstrap.min.css' %}" />
+        <link rel="stylesheet" type="text/css" href=" {% static 'webpage/navbar-static-top.css' %}" />
+        {% block headers %}{% endblock %}
+        <title>Tecthulhu Control</title>
+    </head>
+    <body>
+        <!-- Static navbar -->
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+            <a class="navbar-brand" href="/">Tecthulhu Control</a>
+
+            <div id="navbar">
+                <ul class="navbar-nav mr-auto">
+                    {% block navitems %}{% endblock %}
+                </ul>
+            </div><!--/.nav-collapse -->
+        </nav>
+
+        {% block content %}{% endblock %}
+    </body>
+    {% block script %}{% endblock %}
+</html>

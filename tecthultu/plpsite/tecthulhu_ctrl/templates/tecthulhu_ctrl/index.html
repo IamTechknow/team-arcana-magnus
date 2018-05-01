@@ -1,0 +1,13 @@
+{% extends "webpage/base.html" %}
+{% load static %}
+
+{% block navitems %}
+	<li class="nav-item"><a href="{% url 'index' %}?faction=0" class="nav-link">Set Neutral</a></li>
+	<li class="nav-item"><a href="{% url 'index' %}?faction=2&level=8&health=100" class="nav-link">Set RP8</a></li>
+	<li class="nav-item"><a href="{% url 'index' %}?faction=1&level=8&health=100" class="nav-link">Set EP8</a></li>
+{% endblock %}
+
+{% block content %}
+    <h1>Tecthulhu Control</h1>
+	
+{% endblock %}
