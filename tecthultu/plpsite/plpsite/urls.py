@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path(r'^', include('tecthulhu_ctrl.urls')),
+    path('', include('tecthulhu_ctrl.urls')),
     path('admin/', admin.site.urls),
 ]

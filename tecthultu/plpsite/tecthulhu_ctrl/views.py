@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib import messages
 
-import paho.mqtt.publish as publish
+from paho.mqtt import publish, MQTTException
 
-IP = 'localhost'
+MQTT_BROKER = 'localhost'
 FACTION_CHANGED = 'portal/factionChange'
 LEVEL_CHANGED = 'portal/levelChange'
 PORTAL_DAMAGED = 'portal/portalDamaged'
@@ -17,8 +17,8 @@ RES = 2
 def index(request):
     #Parse GET request, publish events
     faction = request.GET.get('faction')
-    level = request.GET.get('lvl')
-    health = request.GET.get('hp')
+    level = request.GET.get('level')
+    health = request.GET.get('health')
 
     switch_neutral = False
 
@@ -41,14 +41,15 @@ def index(request):
 
         if health != None:
             events.append( (PORTAL_RECHARGED if int(health) == 100 else PORTAL_DAMAGED, int(health)) )
-    messages.success(request, 'Portal health changed to ' + health)
+            messages.success(request, 'Portal health changed to ' + health)
 
     try:
-        publish.multiple(events, hostname=MQTT_BROKER, port=1883)
+        if len(events) != 0:
+            publish.multiple(events, hostname=MQTT_BROKER, port=1883)
     except MQTTException as e:
         print("Could not publish events: " + e)
 
-    return render(request, 'tecthultu_ctrl/index.html')
+    return render(request, 'tecthulhu_ctrl/index.html')
 
 def getFaction(num):
     if num == 0:
