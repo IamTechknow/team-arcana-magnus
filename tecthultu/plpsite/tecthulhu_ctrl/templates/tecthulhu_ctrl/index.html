@@ -1,6 +1,10 @@
 {% extends "tecthulhu_ctrl/base.html" %}
 {% load static %}
 
+{% block headers %}
+	<style>.my-container {margin-left: 30px;}</style>
+{% endblock %}
+
 {% block navitems %}
 	<li class="nav-item"><a href="{% url 'index' %}?faction=0" class="nav-link">Set Neutral</a></li>
 	<li class="nav-item"><a href="{% url 'index' %}?faction=2&level=8&health=100" class="nav-link">Set RP8</a></li>
@@ -8,6 +12,32 @@
 {% endblock %}
 
 {% block content %}
+<div class="my-container">
     <h1>Tecthulhu Control</h1>
 	
+	<h3>Set Portal Ownership</h3>
+	<div class="btn-toolbar" role="toolbar" aria-label="Faction Toolbar">
+		<div class="btn-group" role="group" aria-label="First group">
+			<a class="btn btn-primary" href="{% url 'index' %}?faction=2" role="button">RES</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?faction=1" role="button">ENL</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?faction=0" role="button">Neutral</a>
+		</div>
+	</div> <br />
+</div>
+
+<div class="my-container">
+	<h3>Set Portal Level</h3>
+	<div class="btn-toolbar" role="toolbar" aria-label="Level Toolbar">
+		<div class="btn-group" role="group" aria-label="First group">
+			<a class="btn btn-primary" href="{% url 'index' %}?level=1" role="button">1</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=2" role="button">2</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=3" role="button">3</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=4" role="button">4</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=5" role="button">5</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=6" role="button">6</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=7" role="button">7</a>
+			<a class="btn btn-primary" href="{% url 'index' %}?level=8" role="button">8</a>
+		</div>
+	</div> <br />
+</div>
 {% endblock %}
