@@ -27,5 +27,5 @@ A central device serves as the subscriber for the Techultu API and the publisher
 
 ## Setup Information
 Uses a Raspberry Pi 3 Model B with Stretch Lite, 16 GB microSD card
-Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev
-Python modules: django paho-mqtt
+Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev autoconf libtool ola ola-python (Only for 2.7)
+Python modules: django paho-mqtt protobuf
