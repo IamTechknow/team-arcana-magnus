@@ -253,10 +253,11 @@
     <Group key="Pin">
       <Data key="2e859751-fd2b-4ae8-9518-b33880627737" value="LED_out1" />
       <Data key="6d3ff9ad-4ea8-472b-8f7e-fc4cae5eb92c" value="RightLED" />
-      <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="Left_detector" />
+      <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="IR_detector" />
+      <Data key="8dda3c22-6e39-4d76-942e-1b57e46cb2b9" value="Pin_2" />
       <Data key="49ab6671-e0bc-4781-a192-75521a61f4dc" value="Right_detector" />
       <Data key="69cdae81-f1b3-45ed-b23d-68236a9249bf" value="ButtonPin" />
-      <Data key="e851a3b9-efb8-48be-bbb8-b303b216c393" value="LeftLED" />
+      <Data key="e851a3b9-efb8-48be-bbb8-b303b216c393" value="Pin_1" />
       <Data key="f2b97178-7aca-4ac6-b038-943b10d62627" value="Mid_Detector" />
     </Group>
   </Group>
@@ -3358,6 +3359,17 @@
       <Group key="0">
         <Data key="Port Format" value="0,0" />
       </Group>
+      <Group key="1">
+        <Data key="Port Format" value="0,1" />
+      </Group>
+      <Group key="2">
+        <Data key="Port Format" value="0,2" />
+      </Group>
+    </Group>
+    <Group key="8dda3c22-6e39-4d76-942e-1b57e46cb2b9">
+      <Group key="0">
+        <Data key="Port Format" value="5,0" />
+      </Group>
     </Group>
     <Group key="49ab6671-e0bc-4781-a192-75521a61f4dc">
       <Group key="0">
@@ -3373,12 +3385,16 @@
       <Group key="0">
         <Data key="Port Format" value="6,2" />
       </Group>
+      <Group key="1">
+        <Data key="Port Format" value="6,3" />
+      </Group>
     </Group>
     <Group key="f2b97178-7aca-4ac6-b038-943b10d62627">
       <Group key="0">
         <Data key="Port Format" value="0,2" />
       </Group>
     </Group>
+    <Group key="UnAssigned Pins" />
   </Group>
   <Group key="PlaceDir">
     <Data key="count" value="0" />

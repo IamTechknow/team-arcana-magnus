@@ -1,6 +1,5 @@
 from ola.ClientWrapper import ClientWrapper
 import array
-import sys
 
 """Python 2 script to test operation of PAR lights with the DMX interface."""
 
