@@ -51,8 +51,7 @@ uint8 checkGlyphs() { //Form bit vector based on result
 
 //Turn off LEDs in the idle state
 void turnOffLEDs() {
-    Port_0_Write(0);
-    Pin_2_Write(0);
+    Port_3_Write(0);
 }
 
 //Process button presses in the game
@@ -71,17 +70,15 @@ void setLEDsInGame() {
     for(int i = 0; i < NUM_NODES; i++) 
         if(currGlyphs[glyphCount][i]) 
             mask &= ~(1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
-    Port_0_Write(mask & 0xff);
+    Port_3_Write(mask & 0xff);
 }
 
 void showUseGlyph() {
     //For now, blink lights for 2 seconds
     for(int i = 0; i < 2; i++) {
-        Port_0_Write(0xFF);
-        Pin_2_Write(1);
+        Port_3_Write(0xFF);
         CyDelay(500);
-        Port_0_Write(0);
-        Pin_2_Write(0);
+        Port_3_Write(0);
         CyDelay(500);
     }
     state = INIT;
@@ -103,7 +100,7 @@ void updateFSM() {
 int main(void) {
     CyGlobalIntEnable; /* Enable global interrupts. */
     ButtonInt_StartEx(ButtonISR);
-    RightISR_StartEx(IRPortISR);
+    Port0ISR_StartEx(IRPortISR);
     state = INIT;
 
     for(;;) {
@@ -120,7 +117,7 @@ int main(void) {
                 break;
             
             case FAILED:
-                
+                showUseGlyph();
                 break;
             
             default:
