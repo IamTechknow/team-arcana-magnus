@@ -10,56 +10,41 @@ enum State {INIT, GAME, FAILED, SOLVED};
 //Global variables
 enum State state;
 volatile uint8 buttonPressed;
-uint8 glyphCount;
+uint8 glyphCount, nodeCount;
 uint8 currGlyphs[NUM_GLYPHS][NUM_NODES]; //Glyph node values are one-indexed
 
-//Button interrupt
+//Button interrupt. Interrupts need to be cleared in the ISR
+//It is possible for the variable to be more than one, so it gets reset when read
 CY_ISR(ButtonISR) {
-    buttonPressed = 1;
+    if(state != SOLVED || state != FAILED) {
+        buttonPressed++;
+    }
+    ButtonPin_ClearInterrupt();
 }
 
 //IR Port 1 interrupt, falling edge
 CY_ISR(IRPortISR) {
     //Port 0 interrupt, identify the pin triggered
     uint8 port_state = IR_detector_Read();
-    uint8 IR1triggered = (port_state & 1) == 0;
-    uint8 IR2triggered = (port_state & 1 << 1) == 0;
-    uint8 IR3triggered = (port_state & 1 << 2) == 0;
+    
+    //Find the pin in which the IR detector is set low
+    uint8 ir_idx = 0;
+    while((port_state & 1 << ir_idx) != 0)
+        ir_idx++;
+    
+    //update the current glyph
+    if(nodeCount < NUM_NODES) {
+        currGlyphs[glyphCount][nodeCount] = ir_idx + 1; //IR index is 1-indexed
+        nodeCount++;
+    }
+    
+    IR_detector_ClearInterrupt();
 }
 
-uint8 checkGlyphs() {
+uint8 checkGlyphs() { //Form bit vector based on result
     uint8 result = 0;
-    uint8* expected = getBodyGlyph();
-    
-    //Compare Glyphs
-    for(int i = 0; i < NUM_GLYPHS; i++) {
-        uint8 expectedNodes = 0, currNodes = 0;
-        uint8 expectedSet[NUM_NODES], currSet[NUM_NODES];
-        uint8* currGlyph = currGlyphs[i];
-        
-        //Build boolean hash sets
-        for(int j = 0; j < NUM_NODES; j++) {
-            if(expected[j] && !expectedSet[expected[j]]) {
-                expectedNodes++; //Count all nodes that have been set
-                expectedSet[expected[j]] = 1;
-            }
-            
-            if(currGlyph[j] && !currSet[currGlyph[j]]) {
-                currNodes++;
-                currSet[expected[j]] = 1;
-            }
-        }
-        
-        //check size, then compare contents which must be identical
-        if(expectedNodes == currNodes) { 
-            uint8 sameValues = 0, j = 0;
-            while(j <= NUM_NODES && expected[j] == currSet[j])
-                j++;
-            
-            if(sameValues == NUM_NODES + 1)
-                result |= 1 << i;
-        }
-    }
+    for(int i = 0; i < NUM_GLYPHS; i++)
+        result |= checkGlyph(currGlyphs[i], getBodyGlyph()) << i;
     
     return result;
 }
@@ -70,26 +55,47 @@ void turnOffLEDs() {
     Pin_2_Write(0);
 }
 
+//Process button presses in the game
+void processButtonInGame() {
+    if(buttonPressed >= 1) {
+        buttonPressed = 0;
+        nodeCount = 0;
+        glyphCount++;
+    }
+}
+
 //Turn off the LEDs that for IR detectors that have detected IR
-void turnOffLEDsInGame() {
+void setLEDsInGame() {
     uint16 mask = ~0; //Get all 1s, then reset desired pins
     
     for(int i = 0; i < NUM_NODES; i++) 
-        if(glyphCount && currGlyphs[glyphCount][i]) 
-            mask &= ~(1 << currGlyphs[glyphCount][i]);
-        
+        if(currGlyphs[glyphCount][i]) 
+            mask &= ~(1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
     Port_0_Write(mask & 0xff);
 }
 
+void showUseGlyph() {
+    //For now, blink lights for 2 seconds
+    for(int i = 0; i < 2; i++) {
+        Port_0_Write(0xFF);
+        Pin_2_Write(1);
+        CyDelay(500);
+        Port_0_Write(0);
+        Pin_2_Write(0);
+        CyDelay(500);
+    }
+    state = INIT;
+}
+
 void updateFSM() {
-    if(state == INIT && buttonPressed) {
+    if(state == INIT && buttonPressed >= 1) {
         state = GAME;
         buttonPressed = 0;
         glyphCount = 0;
     } else if(state == GAME && glyphCount == NUM_GLYPHS) {
         if(checkGlyphs() == CORRECT_BIT_MASK) 
             state = SOLVED;
-        else 
+        else
             state = FAILED;
     }
 }
@@ -98,21 +104,19 @@ int main(void) {
     CyGlobalIntEnable; /* Enable global interrupts. */
     ButtonInt_StartEx(ButtonISR);
     RightISR_StartEx(IRPortISR);
-    
     state = INIT;
 
     for(;;) {
-        //Check for events that can change the state machine
         updateFSM();
         
-        //Process FSM
-        switch(state) {
+        switch(state) { //Process FSM
             case GAME:
-                turnOffLEDsInGame();
+                processButtonInGame();
+                setLEDsInGame();
                 break;
             
             case SOLVED:
-                
+                showUseGlyph();
                 break;
             
             case FAILED:
@@ -124,5 +128,4 @@ int main(void) {
         }
     }
 }
-
 /* [] END OF FILE */

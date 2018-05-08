@@ -16,6 +16,34 @@ uint8* getWrongGlyph() {
     return p;
 }
 
+uint8 checkGlyph(uint8* left, uint8* right) {
+    uint8 expectedNodes = 0, currNodes = 0, result = 0;
+    uint8 expectedSet[NUM_NODES], currSet[NUM_NODES];
+
+    //Build boolean hash sets
+    for(int j = 0; j < NUM_NODES; j++) {
+        if(right[j] && !expectedSet[right[j]]) {
+            expectedNodes++; //Count all nodes that have been set
+            expectedSet[right[j]] = 1;
+        }
+
+        if(left[j] && !currSet[left[j]]) {
+            currNodes++;
+            currSet[left[j]] = 1;
+        }
+    }
+
+    //check size, then compare contents which must be identical
+    if(expectedNodes == currNodes) { 
+        uint8 j = 0;
+        while(j < NUM_NODES && expectedSet[j] == currSet[j])
+            j++;
+
+        result = j == NUM_NODES;
+    }
+    return result;
+}
+
 //Not live until we get all 11 detectors working
 /*
 uint8* getSearchGlyph() {
