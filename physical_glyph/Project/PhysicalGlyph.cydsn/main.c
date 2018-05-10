@@ -9,8 +9,12 @@ enum State {INIT, GAME, FAILED, SOLVED};
 
 //Global variables
 enum State state;
+
+//Whether the button was Pressed
 volatile uint8 buttonPressed;
-uint8 glyphCount, nodeCount;
+
+//Indices for glyph, node, and value of last Node
+volatile uint8 glyphCount, nodeCount, lastNode;
 uint8 currGlyphs[NUM_GLYPHS][NUM_NODES]; //Glyph node values are one-indexed
 
 //Button interrupt. Interrupts need to be cleared in the ISR
@@ -33,9 +37,10 @@ CY_ISR(IRPortISR) {
         ir_idx++;
     
     //update the current glyph
-    if(nodeCount < NUM_NODES) {
+    if(nodeCount < NUM_NODES && ir_idx < 8 && ir_idx != lastNode) {
         currGlyphs[glyphCount][nodeCount] = ir_idx + 1; //IR index is 1-indexed
         nodeCount++;
+        lastNode = ir_idx;
     }
     
     IR_detector_ClearInterrupt();
@@ -65,30 +70,36 @@ void processButtonInGame() {
 
 //Turn off the LEDs that for IR detectors that have detected IR
 void setLEDsInGame() {
-    uint16 mask = ~0; //Get all 1s, then reset desired pins
+    uint16 mask = 0; //Get all 1s, then reset desired pins
     
     for(int i = 0; i < NUM_NODES; i++) 
         if(currGlyphs[glyphCount][i]) 
-            mask &= ~(1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
+            mask |= (1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
     Port_3_Write(mask & 0xff);
+    //Write the last 3 bits here
 }
 
 void showUseGlyph() {
     //For now, blink lights for 2 seconds
     for(int i = 0; i < 2; i++) {
-        Port_3_Write(0xFF);
-        CyDelay(500);
         Port_3_Write(0);
+        CyDelay(500);
+        Port_3_Write(0xFF);
         CyDelay(500);
     }
     state = INIT;
 }
 
 void updateFSM() {
-    if(state == INIT && buttonPressed >= 1) {
+    if(state == INIT && buttonPressed >= 1) { //New game, reset variables
         state = GAME;
         buttonPressed = 0;
+        nodeCount = 0;
         glyphCount = 0;
+        lastNode = 0xFF; //0 is used for first pin in port
+        
+        for(int i = 0; i < NUM_GLYPHS; i++) //reset glyph data
+            memset(currGlyphs[i], 0, NUM_NODES);
     } else if(state == GAME && glyphCount == NUM_GLYPHS) {
         if(checkGlyphs() == CORRECT_BIT_MASK) 
             state = SOLVED;

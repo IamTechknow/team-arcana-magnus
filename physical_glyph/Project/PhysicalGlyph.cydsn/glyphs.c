@@ -19,6 +19,8 @@ uint8* getWrongGlyph() {
 uint8 checkGlyph(uint8* left, uint8* right) {
     uint8 expectedNodes = 0, currNodes = 0, result = 0;
     uint8 expectedSet[NUM_NODES], currSet[NUM_NODES];
+    memset(expectedSet, 0, NUM_NODES);
+    memset(currSet, 0, NUM_NODES);
 
     //Build boolean hash sets
     for(int j = 0; j < NUM_NODES; j++) {
