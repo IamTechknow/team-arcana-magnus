@@ -9,6 +9,7 @@
 	<li class="nav-item"><a href="{% url 'index' %}?faction=0" class="nav-link">Set Neutral</a></li>
 	<li class="nav-item"><a href="{% url 'index' %}?faction=2&level=8&health=100" class="nav-link">Set RP8</a></li>
 	<li class="nav-item"><a href="{% url 'index' %}?faction=1&level=8&health=100" class="nav-link">Set EP8</a></li>
+        <li class="nav-item"><a href="{% url 'index' %}?off=1" class="nav-link">Turn Off Lights</a></li>
 {% endblock %}
 
 {% block content %}
@@ -29,6 +30,7 @@
 	<h3>Set Portal Level</h3>
 	<div class="btn-toolbar" role="toolbar" aria-label="Level Toolbar">
 		<div class="btn-group" role="group" aria-label="First group">
+			<a class="btn btn-primary" href="{% url 'index' %}?level=0" role="button">0</a>
 			<a class="btn btn-primary" href="{% url 'index' %}?level=1" role="button">1</a>
 			<a class="btn btn-primary" href="{% url 'index' %}?level=2" role="button">2</a>
 			<a class="btn btn-primary" href="{% url 'index' %}?level=3" role="button">3</a>

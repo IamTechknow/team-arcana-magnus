@@ -26,7 +26,10 @@ def ctrlLightsByLevel(level):
     arr = array.array('B', data[level] + [0] * 504)
     
     client.SendDmx(0, arr, DmxHandler)
-    
+
+def turnOffLights():
+    client.SendDmx(0, array.array('B', [0] * 512), DmxHandler)
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     #In Python 2.7, self refers to the client object
@@ -36,6 +39,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     if msg.topic == 'portal/levelChange':
         ctrlLightsByLevel(int(msg.payload))
+    elif msg.topic == 'portal/lightsOff':
+        turnOffLights()
 
 #By having the OLA client be a global, we can have the MQTT client loop
 if __name__ == '__main__':
@@ -43,6 +48,7 @@ if __name__ == '__main__':
     mqttClient.on_connect = on_connect
     mqttClient.on_message = on_message
     mqttClient.connect(MQTT_BROKER, 1883, 60)
-    
-    mqttClient.loop_forever()
-    
+    try:
+    	mqttClient.loop_forever()
+    finally:
+	turnOffLights()

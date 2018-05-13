@@ -8,6 +8,7 @@ FACTION_CHANGED = 'portal/factionChange'
 LEVEL_CHANGED = 'portal/levelChange'
 PORTAL_DAMAGED = 'portal/portalDamaged'
 PORTAL_RECHARGED = 'portal/portalRecharged'
+PORTAL_OFF = 'portal/lightsOff'
 
 NEUTRAL = 0
 ENL = 1
@@ -19,6 +20,7 @@ def index(request):
     faction = request.GET.get('faction')
     level = request.GET.get('level')
     health = request.GET.get('health')
+    turn_off = request.GET.get('off')
 
     switch_neutral = False
 
@@ -29,8 +31,13 @@ def index(request):
         messages.success(request, 'Faction changed to ' + getFaction(int(faction)))
         switch_neutral = int(faction) == NEUTRAL
 
+    if level != None:
+        switch_neutral = int(level) == 0
+
     #Always send same result for neutralized portals
-    if switch_neutral:
+    if turn_off != None:
+        events.append( (PORTAL_OFF, 0) )
+    elif switch_neutral:
         events.append( (LEVEL_CHANGED, 0) )
         events.append( (PORTAL_DAMAGED, 0) )
         messages.success(request, 'Portal status changed to neutral')
