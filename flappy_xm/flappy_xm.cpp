@@ -1,25 +1,29 @@
 #include "led-matrix.h"
+#include "graphics.h"
 
+#include <string>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pigpio.h>
+#include <MQTTClient.h>
 #include "flappy_xm.h"
 
-using rgb_matrix::RGBMatrix;
+using namespace rgb_matrix;
 
 //Game states
 enum State {IDLE, GAME, WIN_ANIM};
 
 //Game settings
 State gameState = IDLE;
-float fps = 3.0f;
+float fps = 3.0;
 Color cyan(0, 255, 255);
-float xmLeftY = 7.0f, xmRightY = 7.0f;
-float obstacleLeftX = 32.0f, obstacleRightX = 0f;
-float gapLeftY = 8.0f, gapRightY = 8.0f;
-int delay_speed_usec = 1000000 / speed;
+float xmLeftY = 7.0, xmRightY = 7.0;
+float obstacleLeftX = 32.0F, obstacleRightX = 0;
+float gapLeftY = 8.0, gapRightY = 8.0;
+int delay_speed_usec = 1000000 / fps;
+int portalLevel = 0;
 
 //Handle ctrl-C
 volatile bool interrupt_received = false;
@@ -28,12 +32,9 @@ static void InterruptHandler(int signo) {
 }
 
 //Button interrupt
-void btnInt(int gpio, int level, uint32_t tick)
-{
-    static int c=1;
-    printf("Interrupt #%d level %d at %u\n", c, level, tick);
-    c++;
-   
+void btnInt(int gpio, int level, uint32_t tick) {
+    printf("Interrupt level %d at %u\n", level, tick);
+
     if(gameState == IDLE && level == 1)
 		resetGame();
     else if(level == 1) { //rising edge, did not timeout
@@ -44,18 +45,33 @@ void btnInt(int gpio, int level, uint32_t tick)
 	}
 }
 
+//Callback for message arrival
+int msg_arrived(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
+	char *payload = (char*) message->payload;
+	char *end;
+	portalLevel = std::strtol(payload, &end, 10);
+
+	MQTTClient_freeMessage(&message);
+	MQTTClient_free(topicName);
+	return 1;
+}
+
+void conn_lost(void *context, char* cause) {
+	printf("Connection lost, cause: %s\n", cause);
+}
+
 void drawObstacles() {
 	
 }
 
 //Returns whether or not there is a collision and the game should end
 bool checkCollision() {
-	return xmLeftY < gapLeftY || xmLeftY > gapLeftY + 7 || xmRightY < gapRightY || xmRightY > gapRightY + 7
+	return xmLeftY < gapLeftY || xmLeftY > gapLeftY + 7 || xmRightY < gapRightY || xmRightY > gapRightY + 7;
 }
 
 void updateGame() {
-	xmLeftY += 1.0f;
-	xmRightY += 1.0f;
+	xmLeftY += 1.0;
+	xmRightY += 1.0;
 	
 	if(xmLeftY >= ROWS || xmRightY >= ROWS)
 		gameOver();
@@ -66,12 +82,12 @@ void gameOver() {
 }
 
 void resetGame() {
-	xmLeftY = 7.0f;
-	xmRightY = 7.0f;
-	obstacleLeftX = 32.0f;
-	obstacleRightX = 0f;
-	gapLeftY = 8.0f; 
-	gapRightY = 8.0f;
+	xmLeftY = 7.0;
+	xmRightY = 7.0;
+	obstacleLeftX = 32.0;
+	obstacleRightX = 0;
+	gapLeftY = 8.0;
+	gapRightY = 8.0;
 	gameState = GAME;
 }
 
@@ -86,22 +102,36 @@ void jump2() {
 }
 
 int main(int argc, char **argv) {
-	int BTN1PIN = 3, BTN2PIN = 5;
-	
 	//Init Buttons and rising edge interrupts
 	gpioInitialise();
 	gpioSetMode(BTN1PIN, PI_INPUT);
 	gpioSetMode(BTN2PIN, PI_INPUT);
-	gpioSetPullUpDown(BTN1PIN, PI_PUD_UP);
-	gpioSetPullUpDown(BTN2PIN, PI_PUD_UP);
-	gpioSetISRFunc(BTN1PIN, RISING_EDGE, 1000, btnInt);
-	gpioSetISRFunc(BTN2PIN, RISING_EDGE, 1000, btnInt);
+	gpioSetPullUpDown(BTN1PIN, PI_PUD_DOWN);
+	gpioSetPullUpDown(BTN2PIN, PI_PUD_DOWN);
+	gpioSetISRFunc(BTN1PIN, RISING_EDGE, 0, btnInt);
+	gpioSetISRFunc(BTN2PIN, RISING_EDGE, 0, btnInt);
 	
+	//Init MQTT
+	MQTTClient client;
+	MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+
+	MQTTClient_create(&client, BROKER, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+	conn_opts.keepAliveInterval = 20;
+	conn_opts.cleansession = 1;
+	MQTTClient_setCallbacks(client, NULL, conn_lost, msg_arrived, NULL);
+
+	int rc = MQTTClient_connect(client, &conn_opts);
+	if(rc != MQTTCLIENT_SUCCESS) {
+		printf("Failed to connect, code %d\n", rc);
+		return 1;
+	}
+	MQTTClient_subscribe(client, TOPIC, QOS);
+
 	//Init Matrix
 	RGBMatrix::Options opts;
 	rgb_matrix::RuntimeOptions runtime_defaults;
 	
-	//Using 2 32x16 matrices, drop sudo 
+	//Using 2 32x16 matrices, drop sudo
 	opts.hardware_mapping = "regular";
 	opts.chain_length = 2;
 	opts.rows = ROWS;
@@ -109,7 +139,7 @@ int main(int argc, char **argv) {
 	opts.pwm_bits = 5; //less PWM bits = less CPU time
 	runtime_defaults.drop_privileges = 1;
 	
-	RGBMatrix *matrix = rgb_matrix::CreateMatrixFromOptions(&opts, &runtime_defaults);
+	RGBMatrix *matrix = rgb_matrix::CreateMatrixFromOptions(opts, runtime_defaults);
 	if (matrix == NULL) {
 		return 1;
 	}
@@ -129,9 +159,11 @@ int main(int argc, char **argv) {
 		usleep(delay_speed_usec);
 		
 		// Swap the offscreen_canvas with canvas on vsync, avoids flickering
-		offscreen_canvas = canvas->SwapOnVSync(offscreen_canvas);
+		offscreen_canvas = matrix->SwapOnVSync(offscreen_canvas);
 	}
 	
+	MQTTClient_disconnect(client, TIMEOUT);
+	MQTTClient_destroy(&client);
 	matrix->Clear();
 	delete matrix;
 	gpioTerminate();
