@@ -30,8 +30,8 @@ def index(request):
         events.append( (FACTION_CHANGED, int(faction)) )
         messages.success(request, 'Faction changed to ' + getFaction(int(faction)))
         switch_neutral = int(faction) == NEUTRAL
-		if not switch_neutral and level == None: #pressed a change faction button
-		    level = '1';
+        if not switch_neutral and level == None: #pressed a change faction button
+            level = '1';
 
     if level != None:
         switch_neutral = int(level) == 0
