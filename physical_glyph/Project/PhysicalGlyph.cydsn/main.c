@@ -57,6 +57,7 @@ uint8 checkGlyphs() { //Form bit vector based on result
 //Turn off LEDs in the idle state
 void turnOffLEDs() {
     Port_3_Write(0);
+    //Port_12_Write(0);
 }
 
 //Process button presses in the game
@@ -81,10 +82,25 @@ void setLEDsInGame() {
 
 void showUseGlyph() {
     //For now, blink lights for 2 seconds
+    //Port_12_Write(0);
     for(int i = 0; i < 2; i++) {
         Port_3_Write(0);
         CyDelay(500);
         Port_3_Write(0xFF);
+        //Port_3_Write(0b10100010);
+        CyDelay(500);
+    }
+    state = INIT;
+}
+
+void showFailedGlyph() {
+    //For now, blink lights for 2 seconds
+    for(int i = 0; i < 2; i++) {
+        Port_3_Write(0);
+        //Port_12_Write(0);
+        CyDelay(500);
+        Port_3_Write(0b11111110);
+        //Port_12_Write(0b00000111);
         CyDelay(500);
     }
     state = INIT;
@@ -112,6 +128,7 @@ int main(void) {
     CyGlobalIntEnable; /* Enable global interrupts. */
     ButtonInt_StartEx(ButtonISR);
     Port0ISR_StartEx(IRPortISR);
+    //Port5ISR_StartEx(IRPortISR);
     state = INIT;
 
     for(;;) {
@@ -129,6 +146,7 @@ int main(void) {
             
             case FAILED:
                 showUseGlyph();
+                //showFailedGlyph();
                 break;
             
             default:

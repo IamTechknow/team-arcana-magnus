@@ -46,35 +46,32 @@ uint8 checkGlyph(uint8* left, uint8* right) {
     return result;
 }
 
-//Not live until we get all 11 detectors working
-/*
 uint8* getSearchGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {8, 7, 4, 5, 6, 0, 0, 0, 0, 0, 0};
     return p;
 }
 
 uint8* getAnswerGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {4, 5, 8, 6, 0, 0, 0, 0, 0, 0, 0};
     return p;
 }
 
 uint8* getGainGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {3, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     return p;
 }
 
 uint8* getUnboundedGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {10, 11, 9, 2, 1, 3, 8, 7, 4, 5, 6};
     return p;
 }
 
 uint8* getKnowledgeGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {4, 11, 5, 6, 4, 0, 0, 0, 0, 0, 0};
     return p;
 }
 
 uint8* getIdeaGlyph() {
-    static uint8 p[11] = {};
+    static uint8 p[11] = {5, 3, 10, 8, 6, 4, 2, 9, 7, 0, 0};
     return p;
 }
-*/
