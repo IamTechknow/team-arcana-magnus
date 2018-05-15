@@ -15,18 +15,15 @@ class Algorithm:
     ascii_min = ord('a')
     ascii_max = ord('z')
     
-    def __init__ (self, algorithmType):
-        self.type = algorithmType
-    
     def split_len(self, seq, length):
         return [seq[i:i + length] for i in range(0, len(seq), length)]
     
-    def encrypt(self, value, key =''):
-        if (self.type is AlgorithmType.ROT13) :
+    def encrypt(self, type, value, key =''):
+        if (type is AlgorithmType.ROT13) :
             return codecs.encode(value, 'rot_13')
-        if (self.type is AlgorithmType.BASE64) :
+        if (type is AlgorithmType.BASE64) :
             return codecs.encode(value, 'unicode_internal')
-        if (self.type is AlgorithmType.VIGENERE) :
+        if (type is AlgorithmType.VIGENERE) :
             alpha = ""
             for printable in range(Algorithm.ascii_min, Algorithm.ascii_max+1):
                 alpha = alpha + chr(printable)
