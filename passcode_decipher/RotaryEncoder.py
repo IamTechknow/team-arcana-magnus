@@ -100,10 +100,10 @@ class RotaryEncoderWorker(object):
         self.remainder %= self.steps_per_cycle # remainder always remains positive
         # Check rotary status
         if self.cycles == 1:
-            self.queue.put(EventLeft)
+            self.queue.put(EventRight)
             self.delta = 0
         elif self.cycles == -1:
-            self.queue.put(EventRight)
+            self.queue.put(EventLeft)
             self.delta = 0
         else:
             pass
