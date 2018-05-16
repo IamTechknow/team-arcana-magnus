@@ -19,3 +19,8 @@ IMAGESDICT = {
     'board': pygame.image.load('assets/board.png'),
     'girl': pygame.image.load('assets/girl.png'),
 }
+
+pygame.font.init()
+FONT = pygame.font.SysFont("monospace", 15)
+
+POS_LIST =[(100,300), (200,200), (300,200), (400,300), (300,400), (200,400)]

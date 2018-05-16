@@ -3,11 +3,12 @@ import codecs
 from math import fmod
 
 class AlgorithmType(Enum) :
-    VIGENERE = 1
-    ROT13 = 2
-    ATBASH = 3
-    BASE64 = 4
-    COLTRANS = 5 #Column Trasposition
+    VIGENERE = "VIGENERE"
+    ROT13 = "ROT13"
+    ATBASH = "ATBASH"
+    BASE64 = "BASE64"
+    COLTRANS = "COLTRANS" #Column Trasposition
+    NONE = "NONE"
     
     
 class Algorithm:
@@ -17,6 +18,11 @@ class Algorithm:
     
     def split_len(self, seq, length):
         return [seq[i:i + length] for i in range(0, len(seq), length)]
+    
+    def get_algo_list(self):
+        list = [AlgorithmType.VIGENERE, AlgorithmType.ROT13, AlgorithmType.ATBASH, AlgorithmType.BASE64, AlgorithmType.COLTRANS, AlgorithmType.NONE]
+        return list
+    
     
     def encrypt(self, type, value, key =''):
         if (type is AlgorithmType.ROT13) :
