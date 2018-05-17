@@ -11,6 +11,7 @@ screen_width = 800
 screen_height = 600
 
 
+S1_PIN = 26
 R1_PIN = [18, 17, 16]
 
 GLYPHES = ['SEARCH', 'ANSWER', 'GAIN', 'UNBOUNDED', 'KNWOLEDGE', 'IDEA']
