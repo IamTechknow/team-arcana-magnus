@@ -1,12 +1,16 @@
-from time import sleep
 from queue import Queue
-
 import pygame, sys
 import RPi.GPIO as GPIO
 
 import Consts
+
 import sprites
+
 import RotaryEncoder
+import ButtonEncoder
+
+from random import randint
+
 from algorithm import Algorithm
 from algorithm import AlgorithmType
 
@@ -27,29 +31,34 @@ if __name__ == "__main__":
     all_sprites_list.add(wheel)
     background = pygame.transform.smoothscale(Consts.IMAGESDICT['board'], (Consts.screen_width, Consts.screen_height))
     fpsClock = pygame.time.Clock()
+    
     rotary_1_queue = Queue()
     rotary_1 = RotaryEncoder.RotaryEncoderWorker(Consts.R1_PIN[0], Consts.R1_PIN[1], Consts.R1_PIN[2], rotary_1_queue)
+    
+    switch_1_queue = Queue()
+    switch_1 = ButtonEncoder.ButtonWorker(Consts.S1_PIN, switch_1_queue)
 
     cypher = Algorithm()
+    algos = cypher.get_algo_list()
 
     # Initialise Texts
-    label = Consts.FONT.render(cypher.get_algo_list()[0].value, 1, Consts.RED)
+    label = Consts.FONT.render(algos[0].value, 1, Consts.RED)
     screen.blit(label, Consts.POS_LIST[0])
     for x in range(1, 6):
-        label = Consts.FONT.render(cypher.get_algo_list()[x].value, 1, Consts.WHITE)
+        label = Consts.FONT.render(algos[x].value, 1, Consts.WHITE)
         screen.blit(label, Consts.POS_LIST[x])
     
     
 
     def change_colored(i, direction):
-        label = Consts.FONT.render(cypher.get_algo_list()[i].value, 1, Consts.RED)
+        label = Consts.FONT.render(algos[i].value, 1, Consts.RED)
         screen.blit(label, Consts.POS_LIST[i])
         
         if (direction == 1):
             prev = (i - 1) % 6
         else:
             prev = (i + 1) % 6
-        label = Consts.FONT.render(cypher.get_algo_list()[prev].value, 1, Consts.WHITE)
+        label = Consts.FONT.render(algos[prev].value, 1, Consts.WHITE)
         screen.blit(label, Consts.POS_LIST[prev])
             
     def process(current):
@@ -74,8 +83,20 @@ if __name__ == "__main__":
             rotary_1_queue.task_done()
         return new
 
+    def processBtnQueue(btn_queue):
+        result = False
+        while not (btn_queue.empty()):
+            m = btn_queue.get_nowait()
+            if m == ButtonEncoder.EventClick:
+                print ("Clicked")
+                result =  True
+            btn_queue.task_done()
+        return result
+   
     try:
         global current_selected_1
+        used_algo_id = randint(0, 5)
+        print("selected algorithm : " + str(used_algo_id) + " - " + str(algos[used_algo_id]) )
         current_selected_1 = 0
         #change_colored(current_selected_1, 1)
         while True:
@@ -84,10 +105,18 @@ if __name__ == "__main__":
             # all_sprites_list.draw(screen)
             pygame.display.update()
             current_selected_1 = process(current_selected_1)
+            if (processBtnQueue(switch_1_queue)):
+                print("Selected Algo" + str(current_selected_1) + " - " + str(algos[current_selected_1]) \
+                      + " against used Algo  : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
+            
             fpsClock.tick(Consts.FPS)
             for event in pygame.event.get():
-                if (event.type == pygame.QUIT) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                    sys.exit()    
+                if (event.type == pygame.QUIT):
+                    sys.exit()
+                elif (event.type == pygame.KEYDOWN):
+                    if (event.key == pygame.K_ESCAPE):
+                        sys.exit()                               
+                
     finally:
         print ("ended")
         GPIO.cleanup()
