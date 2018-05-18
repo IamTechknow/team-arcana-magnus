@@ -14,7 +14,7 @@ all : flappy_xm
 flappy_xm : $(OBJS) $(LED_LIBRARY)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $@ $(LDFLAGS)
 
-$(LED_LIBRARY): FORCE
+$(LED_LIBRARY):
 	$(MAKE) -C $(LED_LIB_DIR)
 
 flappy_xm.o : flappy_xm.cpp
@@ -24,7 +24,4 @@ flappy_xm.o : flappy_xm.cpp
 
 clean :
 	rm -f $(OBJS) $(BIN)
-	$(MAKE) -C $(LED_LIBRARY) clean
-
-FORCE:
-.PHONY: FORCE
+	$(MAKE) -C $(LED_LIB_DIR) clean
