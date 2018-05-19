@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
 	opts.chain_length = 2;
 	opts.rows = ROWS;
 	opts.cols = COLS;
-	opts.pwm_bits = 5; //less PWM bits = less CPU time
+	opts.pwm_bits = 3; //less PWM bits = less CPU time
 	x_orig = (opts.chain_length * opts.cols) + 5;
 	x = x_orig;
 

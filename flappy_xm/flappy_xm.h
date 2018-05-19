@@ -6,8 +6,8 @@
 
 #define ROWS 16
 #define COLS 32
-#define BTN1PIN 28 //BCM pins on Header P5
-#define BTN2PIN 29
+#define BTN1PIN 16 //BCM numbers
+#define BTN2PIN 20
 
 #define BROKER "192.168.1.124:1883"
 #define CLIENTID "FlappyClient"
