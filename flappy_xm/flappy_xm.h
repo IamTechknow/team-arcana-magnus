@@ -18,15 +18,19 @@
 
 #define XM1_X 8
 #define XM2_X 56
+#define XM1_HARD_X 16
+#define XM2_HARD_X 48
+#define XM_START_Y 8.0
 #define FRAMES_TO_WIN 200 //20 seconds
 #define FRAMES_TO_WIN_LVL8 400
 
 using namespace rgb_matrix;
+using namespace std;
 
 //Function prototypes
 void processState();
 
-void drawObstacles(FrameCanvas *canvas);
+void drawGlyph(FrameCanvas *canvas, int r_orig, int c_orig, const vector<pair<int, int>> arr);
 
 void drawXM(FrameCanvas *canvas);
 

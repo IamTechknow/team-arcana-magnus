@@ -6,21 +6,22 @@
 #include <pigpio.h>
 #include <MQTTClient.h>
 #include "flappy_xm.h"
+#include "glyph_drawing.cpp"
 
 using namespace rgb_matrix;
 
 //Game states
-enum State {IDLE, GAME, WIN_ANIM, LOSE_ANIM};
+enum State {IDLE, GAME, WIN_ANIM, LOSE_ANIM, SHOW_GLYPHS};
 
 //Game colors
 Color cyan(0, 255, 255), purple(255, 0, 255);
 
 //Game vars
 State gameState = IDLE;
-float xmLeftY = 7.0, xmRightY = 7.0;
+float xmLeftY, xmRightY, xmLeftX, xmRightX;
 float obstacleLeftX = 32.0F, obstacleRightX = 0;
 float gapLeftY = 8.0, gapRightY = 8.0;
-int portalLevel = 8;
+int portalLevel = 0;
 int currFrames;
 
 //Game settings
@@ -84,14 +85,17 @@ void conn_lost(void *context, char* cause) {
 	printf("Connection lost, cause: %s\n", cause);
 }
 
-void drawObstacles(FrameCanvas* canvas) {
-	
+//Draw a glyph onto the canvas, given the origin coordinates and the coordinate vector.
+//SetPixel takes X and Y coordinates
+void drawGlyph(FrameCanvas* canvas, int r_orig, int c_orig, const vector<pair<int, int>> arr) {
+	for(auto coord : arr)
+		canvas->SetPixel(coord.second + c_orig, coord.first + r_orig, color.r, color.g, color.b);
 }
 
 //Set the pixels for the two XM particles
 void drawXM(FrameCanvas* canvas) {
-	canvas->SetPixel(XM1_X, (int) xmLeftY, color.r, color.g, color.b);
-	canvas->SetPixel(XM2_X, (int) xmRightY, color.r, color.g, color.b);
+	canvas->SetPixel(xmLeftX, (int) xmLeftY, color.r, color.g, color.b);
+	canvas->SetPixel(xmRightX, (int) xmRightY, color.r, color.g, color.b);
 }
 
 //Returns whether or not there is a collision and the game should end
@@ -119,8 +123,9 @@ void resetGame() {
 	fall_rate = hardMode ? 0.4 : 0.2;
 	jump_rate = hardMode ? 1.2 : 1.0;
 	currFrames = 0;
-	xmLeftY = hardMode ? 16.0 : 8.0;
-	xmRightY = hardMode ? 16.0 : 8.0;
+	xmLeftY = xmRightY = XM_START_Y;
+	xmLeftX = hardMode ? XM1_HARD_X : XM1_X;
+	xmRightX = hardMode ? XM2_HARD_X : XM2_X;
 	obstacleLeftX = 32.0;
 	obstacleRightX = 0;
 	printf("Starting new game...\n");
@@ -141,7 +146,7 @@ void jump2() {
 int updateScrollText(FrameCanvas *canvas, const Font &font, int x, const char *str) {
 	int length = DrawText(canvas, font, x, 0 + font.baseline(), color, &bg_color, str, 0);
 
-	if (--x + length < 0) 
+	if (--x + length < 0)
 		x = x_orig;
 
 	return x;
@@ -153,13 +158,14 @@ std::string printState(State state) {
 		case WIN_ANIM:
 			str = "WIN_ANIM";
 			break;
-
 		case LOSE_ANIM:
 			str = "LOSE_ANIM";
 			break;
-
 		case GAME:
 			str = "Game";
+			break;
+		case SHOW_GLYPHS:
+			str = "Show Glyphs";
 			break;
 		default:
 			str = "Idle";
@@ -170,7 +176,16 @@ std::string printState(State state) {
 void processState() {
 	State newState = gameState;
 	//Transition from the animation states to the idle state
-	if((gameState == LOSE_ANIM && x == -80) || (gameState == WIN_ANIM && x == -60)) { //Text is going through left matrix
+	if(gameState == LOSE_ANIM && x == -80) { //Text is going through left matrix
+		newState = IDLE;
+		x = x_orig;
+	}
+
+	if(gameState == WIN_ANIM && x == -60)
+		newState = SHOW_GLYPHS;
+
+	if(gameState == SHOW_GLYPHS) {
+		usleep(3000000);
 		newState = IDLE;
 		x = x_orig;
 	}
@@ -196,7 +211,7 @@ void processState() {
 	//Update game variables
 	if(gameState == GAME) {
 		bool hasCollision = updateGame();
-		
+
 		if(hasCollision) {
 			gameOver();
 			newState = LOSE_ANIM;
@@ -206,7 +221,7 @@ void processState() {
 			x = x_orig;
 		}
 	}
-	
+
 	if(gameState != newState) {
 		printf("Transitioning from %s to %s\n", printState(gameState).c_str(), printState(newState).c_str());
 		gameState = newState;
@@ -283,6 +298,13 @@ int main(int argc, char **argv) {
 		//Process the state machine, update the matrices
 		processState();
 		switch(gameState) {
+			case SHOW_GLYPHS:
+				drawGlyph(offscreen_canvas, 3, 4, knowledge);
+				drawGlyph(offscreen_canvas, 3, 4 + COLS, knowledge);
+				drawGlyph(offscreen_canvas, 3, 15, idea);
+				drawGlyph(offscreen_canvas, 3, 15 + COLS, idea);
+				break;
+
 			case WIN_ANIM:
 				x = updateScrollText(offscreen_canvas, the_font, x, youWin.c_str());
 				break;
@@ -293,7 +315,6 @@ int main(int argc, char **argv) {
 
 			case GAME:
 				drawXM(offscreen_canvas);
-				drawObstacles(offscreen_canvas);
 				break;
 			default:
 				x = updateScrollText(offscreen_canvas, the_font, x, idleLine.c_str());
@@ -311,7 +332,7 @@ int main(int argc, char **argv) {
 //	MQTTClient_destroy(&client);
 	matrix->Clear();
 	delete matrix;
-	
+
 	return 0;
 }
 
