@@ -20,7 +20,7 @@ State gameState = IDLE;
 float xmLeftY = 7.0, xmRightY = 7.0;
 float obstacleLeftX = 32.0F, obstacleRightX = 0;
 float gapLeftY = 8.0, gapRightY = 8.0;
-int portalLevel = 0;
+int portalLevel = 8;
 int currFrames;
 
 //Game settings
@@ -119,12 +119,10 @@ void resetGame() {
 	fall_rate = hardMode ? 0.4 : 0.2;
 	jump_rate = hardMode ? 1.2 : 1.0;
 	currFrames = 0;
-	xmLeftY = 7.0;
-	xmRightY = 7.0;
+	xmLeftY = hardMode ? 16.0 : 8.0;
+	xmRightY = hardMode ? 16.0 : 8.0;
 	obstacleLeftX = 32.0;
 	obstacleRightX = 0;
-	gapLeftY = hardMode ? 16.0 : 8.0;
-	gapRightY = hardMode ? 16.0 : 8.0;
 	printf("Starting new game...\n");
 }
 
@@ -251,6 +249,7 @@ int main(int argc, char **argv) {
 	opts.chain_length = 2;
 	opts.rows = ROWS;
 	opts.cols = COLS;
+	opts.brightness = 50;
 	opts.pwm_bits = 3; //less PWM bits = less CPU time
 	x_orig = (opts.chain_length * opts.cols) + 5;
 	x = x_orig;
