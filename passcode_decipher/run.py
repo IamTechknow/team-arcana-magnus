@@ -1,4 +1,3 @@
-from queue import Queue
 import pygame, sys
 import RPi.GPIO as GPIO
 
@@ -6,7 +5,6 @@ import Consts
 
 import sprites
 
-import RotaryEncoder
 import ButtonEncoder
 
 from AlgorithmChooser import AlgorithmChooser
@@ -26,7 +24,6 @@ if __name__ == "__main__":
     
     #Sprites
     #all_sprites_list = pygame.sprite.Group()
-
     #wheel = sprites.Wheel()
     #wheel.rect.x = 200
     #wheel.rect.y = 200
@@ -34,9 +31,6 @@ if __name__ == "__main__":
     
     background = pygame.transform.smoothscale(Consts.IMAGESDICT['board'], (Consts.screen_width, Consts.screen_height))
     screen.blit(background, [0, 0])
-    
-    
-    fpsClock = pygame.time.Clock()
 
     cypher = Algorithm()
     algos = cypher.get_algo_list()
@@ -45,15 +39,12 @@ if __name__ == "__main__":
     chooser_2 = AlgorithmChooser(screen, Consts.R2_PIN, Consts.POS_LIST_2, algos)
     chooser_3 = AlgorithmChooser(screen, Consts.R3_PIN, Consts.POS_LIST_3, algos)
 
-    switch_1 = ButtonEncoder.ButtonWorker(Consts.S1_PIN, Queue())
+    switch_1 = ButtonEncoder.ButtonWorker(Consts.S1_PIN)
    
     try:
-        global cur_sel_algo
         used_algo_id = randint(0, 5)
         print("selected algorithm : " + str(used_algo_id) + " - " + str(algos[used_algo_id]) )
-        current_glyph = 0
         while True:
-            # pygame.display.update()
             # all_sprites_list.draw(screen)
             pygame.display.update()
             chooser_1.update()
@@ -66,15 +57,14 @@ if __name__ == "__main__":
                       + " against used Algo2 : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
                 print("Selected Algo3 : " + str(chooser_3.position) + " - " + str(algos[chooser_3.position]) \
                       + " against used Algo3 : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
-            
+
             fpsClock.tick(Consts.FPS)
             for event in pygame.event.get():
                 if (event.type == pygame.QUIT):
                     sys.exit()
                 elif (event.type == pygame.KEYDOWN):
                     if (event.key == pygame.K_ESCAPE):
-                        sys.exit()                               
-                
+                        sys.exit()                
     finally:
         print ("ended")
         GPIO.cleanup()
