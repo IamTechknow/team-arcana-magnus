@@ -7,12 +7,13 @@ WHITE = (255, 255, 255)
 RED   = (255,   0,   0)
 FPS = 30
 
-screen_width = 800
-screen_height = 600
+screen_width = 1366
+screen_height = 768
 
 
 S1_PIN = 26
 R1_PIN = [18, 17, 16]
+R2_PIN = [23, 22, 24]
 
 GLYPHES = ['SEARCH', 'ANSWER', 'GAIN', 'UNBOUNDED', 'KNWOLEDGE', 'IDEA']
 
@@ -24,4 +25,6 @@ IMAGESDICT = {
 pygame.font.init()
 FONT = pygame.font.SysFont("monospace", 15)
 
-POS_LIST =[(100,300), (200,200), (300,200), (400,300), (300,400), (200,400)]
+POS_LIST_1 =[(50,150), (150,50), (250,50), (350,150), (250,250), (150,250)]
+POS_LIST_2 =[(450,150), (550,50), (650,50), (750,150), (650,250), (550,250)]
+POS_LIST_3 =[(50,150), (150,50), (250,50), (350,150), (250,250), (150,250)]
