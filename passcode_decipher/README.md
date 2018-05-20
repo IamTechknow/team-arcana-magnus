@@ -1,4 +1,4 @@
-# Flappy XM Game (Two-Player puzzle)
+# Passcode Decipher Station
 
 ## Introduction
 The Passcode Decipher station will present a visitor with encrypted phrases and a variety of methods which could be used to convert a phrase into something different and ultimately decrypt the phrases to English. This station will involve a monitor and three turnable knobs which will allow the user to switch through available deciphering methods. Up to three phrases may be solved at a time, but there may be more than one set of phrases to go through, depending on the portal level. Deciphering all of the phrases will complete the puzzle and the user is rewarding with a glyph for the final puzzle, as well as any information obtained throughout this puzzle.
