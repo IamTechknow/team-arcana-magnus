@@ -10,13 +10,16 @@ static volatile uint32_t prev_tick, prev2_tick;
 
 //Interrupt handler function
 void btnInt(int gpio, int level, uint32_t tick) {
+	uint32_t diff;
 	if(gpio == BTN1PIN) {
-		if((prev_tick + DEBOUNCE_TIME_US) <= tick) { //next button press cannot come before 1/2 second after last valid one
+		diff = tick - prev_tick;
+		if(diff > DEBOUNCE_TIME_US) { //next button press cannot come before 1/2 second after last valid one
 			prev_tick = tick;
 			printf("Button 1: Interrupt level %d at %u\n", level, tick);
 		}
 	} else {
-		if((prev2_tick + DEBOUNCE_TIME_US) <= tick) {
+		diff = tick - prev2_tick;
+		if(diff > DEBOUNCE_TIME_US) {
 			prev2_tick = tick;
 			printf("Button 2: Interrupt level %d at %u\n", level, tick);
 		}
@@ -26,6 +29,8 @@ void btnInt(int gpio, int level, uint32_t tick) {
 int main(int argc, char **argv) {
 	//Set input pins, pull down configuration, and interrupt (no timeout)
 	gpioInitialise();
+	prev_tick = gpioTick();
+	prev2_tick = prev_tick;
 	gpioSetMode(BTN1PIN, PI_INPUT);
 	gpioSetMode(BTN2PIN, PI_INPUT);
 	gpioSetPullUpDown(BTN1PIN, PI_PUD_DOWN);

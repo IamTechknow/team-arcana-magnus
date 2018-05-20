@@ -15,15 +15,19 @@ enum State {IDLE, GAME, WIN_ANIM, LOSE_ANIM};
 //Game colors
 Color cyan(0, 255, 255), purple(255, 0, 255);
 
-//Game settings
+//Game vars
 State gameState = IDLE;
-float fps = 3.0, text_fps = 7.0;
 float xmLeftY = 7.0, xmRightY = 7.0;
 float obstacleLeftX = 32.0F, obstacleRightX = 0;
 float gapLeftY = 8.0, gapRightY = 8.0;
-int delay_usec = 1000000 / fps, text_delay = 1000000 / text_fps;
 int portalLevel = 0;
 int currFrames;
+
+//Game settings
+float fps = 10.0, text_fps = 7.0;
+int delay_usec = 1000000 / fps, text_delay = 1000000 / text_fps;
+float jump_rate, fall_rate;
+bool hardMode = false; //only set when game starts, so portal changes don't affect current game
 Color color = cyan;
 
 //Text variables
@@ -38,15 +42,25 @@ static void InterruptHandler(int signo) {
 }
 
 //Button interrupt, triggers variables that get checked when FSM updates
+//Also handle the button debouncing here.
+static volatile uint32_t prev_tick, prev2_tick;
 volatile bool buttonPressed = false, button2Pressed = false;
 void btnInt(int gpio, int level, uint32_t tick) {
-    printf("Interrupt level %d at %u\n", level, tick);
-
-    if(level == 1) { //rising edge
-        if(gpio == BTN1PIN)
+	uint32_t diff;
+    if(gpio == BTN1PIN) {
+		diff = tick - prev_tick;
+		if(diff > DEBOUNCE_TIME_US) { //next button press cannot come before 1/2 second after last valid one
+			prev_tick = tick;
+			printf("Button 1: Interrupt level %d at %u\n", level, tick);
 			buttonPressed = true;
-		else
+		}
+	} else {
+		diff = tick - prev2_tick;
+		if(diff > DEBOUNCE_TIME_US) {
+			prev2_tick = tick;
+			printf("Button 2: Interrupt level %d at %u\n", level, tick);
 			button2Pressed = true;
+		}
 	}
 }
 
@@ -86,48 +100,47 @@ bool checkCollision() {
 }
 
 //Update game values that will be used to update the matrices
-void updateGame() {
-	xmLeftY += 0.5; //Move down players every 2/3 a second
-	xmRightY += 0.5;
-	//currFrames++;
+bool updateGame() {
+	xmLeftY += fall_rate; //Move down players every 1/3 a second
+	xmRightY += fall_rate;
+	currFrames++;
 
-	if(xmLeftY >= ROWS || xmRightY >= ROWS)
-		gameOver();
+	return xmLeftY >= ROWS || xmRightY >= ROWS || xmLeftY < 0.0 || xmRightY < 0.0;
 }
 
 //Start scrolling the Game over text
 void gameOver() {
 	printf("Game over\n");
-	gameState = LOSE_ANIM;
-	x = x_orig;
 }
 
 //Reset values and start a new game
 void resetGame() {
+	hardMode = portalLevel == 8;
+	fall_rate = hardMode ? 0.4 : 0.2;
+	jump_rate = hardMode ? 1.2 : 1.0;
 	currFrames = 0;
 	xmLeftY = 7.0;
 	xmRightY = 7.0;
 	obstacleLeftX = 32.0;
 	obstacleRightX = 0;
-	gapLeftY = 8.0;
-	gapRightY = 8.0;
-	gameState = GAME;
+	gapLeftY = hardMode ? 16.0 : 8.0;
+	gapRightY = hardMode ? 16.0 : 8.0;
 	printf("Starting new game...\n");
 }
 
-//Raise the position of the left and right players
+//Raise the position of the left and right players (accounts for gravity too)
 void jump1() {
 	if(xmLeftY > 0)
-		xmLeftY -= 0.5;
+		xmLeftY -= jump_rate;
 }
 
 void jump2() {
 	if(xmRightY > 0)
-		xmRightY -= 0.5;
+		xmRightY -= jump_rate;
 }
 
 //Draw text on the screen and update the given x variable.
-int updateScrollText(FrameCanvas *canvas, Font font, int x, char *str) {
+int updateScrollText(FrameCanvas *canvas, const Font &font, int x, const char *str) {
 	int length = DrawText(canvas, font, x, 0 + font.baseline(), color, &bg_color, str, 0);
 
 	if (--x + length < 0) 
@@ -136,17 +149,40 @@ int updateScrollText(FrameCanvas *canvas, Font font, int x, char *str) {
 	return x;
 }
 
+std::string printState(State state) {
+	std::string str;
+	switch(state) {
+		case WIN_ANIM:
+			str = "WIN_ANIM";
+			break;
+
+		case LOSE_ANIM:
+			str = "LOSE_ANIM";
+			break;
+
+		case GAME:
+			str = "Game";
+			break;
+		default:
+			str = "Idle";
+	}
+	return str;
+}
+
 void processState() {
-	State newState;
+	State newState = gameState;
 	//Transition from the animation states to the idle state
-	if((gameState == LOSE_ANIM && x == -9) || (gameState == WIN_ANIM && x == -6)) //Text is going through left matrix
+	if((gameState == LOSE_ANIM && x == -80) || (gameState == WIN_ANIM && x == -60)) { //Text is going through left matrix
 		newState = IDLE;
+		x = x_orig;
+	}
 
 	//Manage button presses
 	if(buttonPressed) {
-		if(gameState == IDLE)
+		if(gameState == IDLE) {
 			resetGame();
-		else if(gameState == GAME)
+			newState = GAME;
+		} else if(gameState == GAME)
 			jump1();
 
 		buttonPressed = false;
@@ -159,17 +195,31 @@ void processState() {
 		button2Pressed = false;
 	}
 
-	//Check win condition
-	if(gameState == GAME)
-		if((portalLevel < 8 && currFrames >= FRAMES_TO_WIN) || (portalLevel == 8 && currFrames >= FRAMES_TO_WIN_LVL8))
+	//Update game variables
+	if(gameState == GAME) {
+		bool hasCollision = updateGame();
+		
+		if(hasCollision) {
+			gameOver();
+			newState = LOSE_ANIM;
+			x = x_orig;
+		} else if((!hardMode && currFrames >= FRAMES_TO_WIN) || (hardMode && currFrames >= FRAMES_TO_WIN_LVL8)) {
 			newState = WIN_ANIM;
-
-	gameState = newState;
+			x = x_orig;
+		}
+	}
+	
+	if(gameState != newState) {
+		printf("Transitioning from %s to %s\n", printState(gameState).c_str(), printState(newState).c_str());
+		gameState = newState;
+	}
 }
 
 int main(int argc, char **argv) {
 	//Init Buttons and rising edge interrupts
 	gpioInitialise();
+	prev_tick = gpioTick();
+	prev2_tick = prev_tick;
 	gpioSetMode(BTN1PIN, PI_INPUT);
 	gpioSetMode(BTN2PIN, PI_INPUT);
 	gpioSetPullUpDown(BTN1PIN, PI_PUD_DOWN);
@@ -231,31 +281,23 @@ int main(int argc, char **argv) {
 	while (!interrupt_received) {
 		offscreen_canvas->Clear();
 
-		//Process the state machine
+		//Process the state machine, update the matrices
 		processState();
 		switch(gameState) {
 			case WIN_ANIM:
-				//x = updateScrollText(offscreen_canvas, the_font, x, youWin.c_str());
+				x = updateScrollText(offscreen_canvas, the_font, x, youWin.c_str());
 				break;
 
 			case LOSE_ANIM:
-				//x = updateScrollText(offscreen_canvas, the_font, x, gameOverStr.c_str());
+				x = updateScrollText(offscreen_canvas, the_font, x, gameOverStr.c_str());
 				break;
 
 			case GAME:
-				updateGame();
 				drawXM(offscreen_canvas);
 				drawObstacles(offscreen_canvas);
 				break;
 			default:
-				//x = updateScrollText(offscreen_canvas, the_font, x, idleLine.c_str());
-				int length = rgb_matrix::DrawText(offscreen_canvas, the_font,
-                            x, 0 + the_font.baseline(),
-                            color, &bg_color,
-							idleLine.c_str(), 0);
-
-				if (--x + length < 0)
-      				x = x_orig;
+				x = updateScrollText(offscreen_canvas, the_font, x, idleLine.c_str());
 		}
 
 		// Swap the offscreen_canvas with canvas on vsync, avoids flickering
@@ -264,13 +306,13 @@ int main(int argc, char **argv) {
 		usleep(gameState == GAME ? delay_usec : text_delay / the_font.CharacterWidth('W'));
 	}
 
+	printf("Exiting on Ctrl-C...\n");
+	gpioTerminate();
 //	MQTTClient_disconnect(client, TIMEOUT);
 //	MQTTClient_destroy(&client);
-	printf("Exiting on Ctrl-C...\n");
 	matrix->Clear();
 	delete matrix;
-	gpioTerminate();
-
+	
 	return 0;
 }
 
