@@ -8,14 +8,14 @@ class AlgorithmChooser(object):
         self.rotary = RotaryEncoder.RotaryEncoderWorker(pins[0], pins[1], pins[2], self.queue)
         self.position = 0
         self.screen = screen
-        self.postions = positions
+        self.positions = positions
         self.algos = algos
         
         label = Consts.FONT.render(self.algos[0].value, 1, Consts.RED)
-        screen.blit(label, self.postions[0])
+        screen.blit(label, self.positions[0])
         for x in range(1, 6):
             label = Consts.FONT.render(self.algos[x].value, 1, Consts.WHITE)
-            screen.blit(label, self.postions[x])
+            screen.blit(label, self.positions[x])
         
     def update(self):
         # this function can be called in order to decide what is happening with the switch
@@ -39,13 +39,11 @@ class AlgorithmChooser(object):
     
     def change_colored(self, direction):
         label = Consts.FONT.render(self.algos[self.position].value, 1, Consts.RED)
-        self.screen.blit(label, Consts.POS_LIST_1[self.position])
-        
+        self.screen.blit(label, self.positions[self.position])
+
         if (direction == 1):
             prev = (self.position - 1) % 6
         else:
             prev = (self.position + 1) % 6
         label = Consts.FONT.render(self.algos[prev].value, 1, Consts.WHITE)
-        self.screen.blit(label, Consts.POS_LIST_1[prev])
-        
-        
+        self.screen.blit(label, self.positions[prev])        

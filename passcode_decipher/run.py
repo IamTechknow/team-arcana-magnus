@@ -39,10 +39,9 @@ if __name__ == "__main__":
     algos = cypher.get_algo_list()
     
     chooser_1 = AlgorithmChooser(screen, Consts.R1_PIN, Consts.POS_LIST_1, algos)
-    
-    rotary_2_queue = Queue()
-    rotary_2 = RotaryEncoder.RotaryEncoderWorker(Consts.R2_PIN[0], Consts.R2_PIN[1], Consts.R2_PIN[2], rotary_2_queue)
-    
+    chooser_2 = AlgorithmChooser(screen, Consts.R2_PIN, Consts.POS_LIST_2, algos)
+    chooser_3 = AlgorithmChooser(screen, Consts.R3_PIN, Consts.POS_LIST_3, algos)
+
     switch_1_queue = Queue()
     switch_1 = ButtonEncoder.ButtonWorker(Consts.S1_PIN, switch_1_queue)
     
@@ -66,9 +65,15 @@ if __name__ == "__main__":
             # all_sprites_list.draw(screen)
             pygame.display.update()
             chooser_1.update()
+            chooser_2.update()
+            chooser_3.update()
             if (processBtnQueue(switch_1_queue)):
-                print("Selected Algo" + str(chooser_1.position) + " - " + str(algos[chooser_1.position]) \
-                      + " against used Algo  : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
+                print("Selected Algo1 : " + str(chooser_1.position) + " - " + str(algos[chooser_1.position]) \
+                      + " against used Algo1 : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
+                print("Selected Algo2 : " + str(chooser_2.position) + " - " + str(algos[chooser_2.position]) \
+                      + " against used Algo2 : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
+                print("Selected Algo3 : " + str(chooser_3.position) + " - " + str(algos[chooser_3.position]) \
+                      + " against used Algo3 : " + str(used_algo_id) + " - " + str(algos[used_algo_id]))
             
             fpsClock.tick(Consts.FPS)
             for event in pygame.event.get():
