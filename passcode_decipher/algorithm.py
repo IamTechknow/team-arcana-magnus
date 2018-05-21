@@ -1,6 +1,7 @@
 from enum import Enum
 import codecs
 from math import fmod
+import Consts
 
 class AlgorithmType(Enum) :
     VIGENERE = "VIGENERE"
@@ -12,7 +13,7 @@ class AlgorithmType(Enum) :
     
     
 class Algorithm:
-    ALPHA = 'abcdefghijklmnopqrstuvwxyz'
+    ALPHA = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     ascii_min = ord('a')
     ascii_max = ord('z')
     
@@ -24,12 +25,15 @@ class Algorithm:
         return list
     
     
-    def encrypt(self, type, value, key =''):
+    def encrypt(self, type, value):
+        print(str(type))
         if (type is AlgorithmType.ROT13) :
             return codecs.encode(value, 'rot_13')
         if (type is AlgorithmType.BASE64) :
-            return codecs.encode(value, 'unicode_internal')
+            value = codecs.encode(value, 'unicode_internal')
+            return "ERROR B64"
         if (type is AlgorithmType.VIGENERE) :
+            key = Consts.CRYPTO_KEY_LETTERS
             alpha = ""
             for printable in range(Algorithm.ascii_min, Algorithm.ascii_max+1):
                 alpha = alpha + chr(printable)
@@ -53,13 +57,15 @@ class Algorithm:
                 out += letter
 
             return out
-        if (self.type is AlgorithmType.ATBASH) :
+        if (type is AlgorithmType.ATBASH) :
             cipher = ""
             for i in value:
+                print(i)
                 index = Algorithm.ALPHA.index(i)
                 cipher += Algorithm.ALPHA[abs(len(Algorithm.ALPHA) - index - 1) % len(Algorithm.ALPHA)]
             return cipher
-        if (self.type is AlgorithmType.COLTRANS) :
+        if (type is AlgorithmType.COLTRANS) :
+            key = Consts.CRYPTO_KEY_NUM
             order = {
                 int(val): num for num, val in enumerate(key)
             }
@@ -73,5 +79,5 @@ class Algorithm:
                         continue
 
             return ciphertext
-        return false
+        return value
     

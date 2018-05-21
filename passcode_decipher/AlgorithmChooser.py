@@ -1,6 +1,8 @@
 import RotaryEncoder
 import Consts
 from queue import Queue
+from algorithm import Algorithm
+from algorithm import AlgorithmType
 
 class AlgorithmChooser(object):
     def __init__(self, screen, pins, positions, algos, color):
@@ -26,7 +28,8 @@ class AlgorithmChooser(object):
         self.text = text
         self.selected_algo_id = algo_id
         
-        label = Consts.FONT.render(self.text, 1, self.current_color)
+        crypted = Algorithm().encrypt(self.algos[self.selected_algo_id], self.text)
+        label = Consts.FONT.render(crypted, 1, self.current_color)
         self.screen.blit(label, self.positions[6])
         
     

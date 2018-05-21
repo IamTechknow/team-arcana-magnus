@@ -2,6 +2,9 @@ import pygame
 
 TITLE = 'Arkana'
 
+CRYPTO_KEY_LETTERS = 'ARCANA'
+CRYPTO_KEY_NUM = '12435'
+
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
 RED   = (255,   0,   0)
