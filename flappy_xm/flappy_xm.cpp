@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
 	gpioSetISRFunc(BTN2PIN, RISING_EDGE, 0, btnInt);
 
 	//Init MQTT
-/*	MQTTClient client;
+	MQTTClient client;
 	MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
 	MQTTClient_create(&client, BROKER, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
@@ -312,11 +312,10 @@ int main(int argc, char **argv) {
 
 	int rc = MQTTClient_connect(client, &conn_opts);
 	if(rc != MQTTCLIENT_SUCCESS) {
-		printf("Failed to connect, code %d\n", rc);
-		return 1;
-	}
-	MQTTClient_subscribe(client, TOPIC, QOS);
-*/
+		printf("Failed to connect to MQTT broker, code %d\n", rc);
+	} else
+		MQTTClient_subscribe(client, TOPIC, QOS);
+
 	//Init Matrix
 	RGBMatrix::Options opts;
 
@@ -401,8 +400,10 @@ int main(int argc, char **argv) {
 
 	printf("Exiting on Ctrl-C...\n");
 	gpioTerminate();
-//	MQTTClient_disconnect(client, TIMEOUT);
-//	MQTTClient_destroy(&client);
+	if(rc == MQTTCLIENT_SUCCESS) {
+		MQTTClient_disconnect(client, TIMEOUT);
+		MQTTClient_destroy(&client);
+	}
 	matrix->Clear();
 	delete matrix;
 
