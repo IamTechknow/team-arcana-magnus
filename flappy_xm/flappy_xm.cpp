@@ -12,7 +12,7 @@
 using namespace rgb_matrix;
 
 //Game states
-enum State {IDLE, GAME, WIN_ANIM, LOSE_ANIM, SHOW_GLYPHS};
+enum State {IDLE, GAME, WIN_ANIM, LOSE_ANIM, LOSE_TEXT, SHOW_GLYPHS};
 
 //Game colors
 Color cyan(0, 255, 255), purple(255, 0, 255);
@@ -107,7 +107,6 @@ void drawGlyph(FrameCanvas* canvas, int r_orig, int c_orig, const vector<pair<in
 }
 
 void drawObstacles(FrameCanvas *canvas) {
-	//TODO: Use data to decide how the obstacles are drawn.
 	for(Glyph g : currObstacles)
 		for(auto coord : g.getData())
 			canvas->SetPixel(coord.second + (int) g.getOrigin().second, coord.first + (int) g.getOrigin().first, color.r, color.g, color.b);
@@ -124,7 +123,7 @@ void drawXM(FrameCanvas* canvas) {
 bool checkCollision() {
 	auto pair1 = make_pair(xmLeftX, (int) xmLeftY);
 	auto pair2 = make_pair(xmRightX, (int) xmRightY);
-	
+
 	return coordsSet.find(pair1) != coordsSet.end() || coordsSet.find(pair2) != coordsSet.end();
 }
 
@@ -133,7 +132,7 @@ bool updateGame() {
 	xmLeftY += fall_rate; //Move down players every 1/3 a second
 	xmRightY += fall_rate;
 	currFrames++;
-	
+
 	//Determine if a new glyph should spawn, then spawn one for each matrix
 	if(currFrames % SPAWN_THRESHOLD == 1) {
 		printf("Creating glyphs...\n");
@@ -141,27 +140,27 @@ bool updateGame() {
 		currObstacles.push_back(Glyph(make_pair(rand_x, COLS), allGlyphs[rand_idx], GLYPH_LENGTHS[rand_idx], true));
 		currObstacles.push_back(Glyph(make_pair(rand_x, COLS), allGlyphs[rand_idx], GLYPH_LENGTHS[rand_idx], false));
 	}
-	
+
 	//Update all existing glyphs. If a glyph should disappear, queue its index
 	for(size_t i = 0; i < currObstacles.size(); i++) {
 		Glyph temp = currObstacles[i];
 		if(temp.getOrigin().second + temp.getLength() < 0) {
 			toDelete.push_back(i);
 			printf("Destroying glyph...\n");
-		} else 
+		} else
 			currObstacles[i].updateOrigin();
 	}
-	
+
 	for(int i : toDelete)
 		currObstacles.erase(currObstacles.begin() + i);
 	toDelete.clear();
-	
+
 	//Update the coordinate set
 	coordsSet.clear();
 	for(Glyph g : currObstacles)
 		for(auto pair : g.getData())
 			coordsSet.insert(make_pair(pair.second + g.getOrigin().second, pair.first + g.getOrigin().first));
-	
+
 	return checkCollision() || xmLeftY >= ROWS || xmRightY >= ROWS || xmLeftY < 0.0 || xmRightY < 0.0;
 }
 
@@ -217,6 +216,9 @@ std::string printState(State state) {
 		case LOSE_ANIM:
 			str = "LOSE_ANIM";
 			break;
+		case LOSE_TEXT:
+			str = "LOSE_TEXT";
+			break;
 		case GAME:
 			str = "Game";
 			break;
@@ -232,7 +234,10 @@ std::string printState(State state) {
 void processState() {
 	State newState = gameState;
 	//Transition from the animation states to the idle state
-	if(gameState == LOSE_ANIM && x == -80) { //Text is going through left matrix
+	if(gameState == LOSE_ANIM && x == 80)
+		newState = LOSE_TEXT;
+
+	if(gameState == LOSE_TEXT && x == -80) { //Text is going through left matrix
 		newState = IDLE;
 		x = x_orig;
 	}
@@ -271,7 +276,7 @@ void processState() {
 		if(hasCollision) {
 			gameOver();
 			newState = LOSE_ANIM;
-			x = x_orig;
+			x = 0;
 		} else if((!hardMode && currFrames >= FRAMES_TO_WIN) || (hardMode && currFrames >= FRAMES_TO_WIN_LVL8)) {
 			newState = WIN_ANIM;
 			x = x_orig;
@@ -366,6 +371,17 @@ int main(int argc, char **argv) {
 				break;
 
 			case LOSE_ANIM:
+				drawObstacles(offscreen_canvas);
+				if((x % 20) < 10)
+					drawXM(offscreen_canvas);
+				else {
+					offscreen_canvas->SetPixel(xmLeftX, (int) xmLeftY, 0, 0, 0);
+					offscreen_canvas->SetPixel(xmRightX, (int) xmRightY, 0, 0, 0);
+				}
+				x++;
+				break;
+
+			case LOSE_TEXT:
 				x = updateScrollText(offscreen_canvas, the_font, x, gameOverStr.c_str());
 				break;
 
