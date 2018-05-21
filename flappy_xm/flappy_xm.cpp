@@ -1,4 +1,5 @@
 #include <string>
+#include <unordered_set>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,19 @@ float obstacleLeftX = 32.0F, obstacleRightX = 0;
 float gapLeftY = 8.0, gapRightY = 8.0;
 int portalLevel = 0;
 int currFrames;
+
+//Allow coordinates to be hashable
+//See Method 1 in http://marknelson.us/2011/09/03/hash-functions-for-c-unordered-containers/
+typedef pair<int,int> Coord;
+size_t coord_hash(const Coord &c) {
+    return hash<int>()(c.first) ^ hash<int>()(c.second);
+}
+
+//Obstacles info
+static unordered_set<pair<int, int>, decltype(&coord_hash)> coordsSet(1000, coord_hash);
+vector<Glyph> currObstacles;
+vector<int> toDelete;
+vector<vector<pair<int, int>>> allGlyphs = { breathe, easy, soul, gain, create, mystery, civil, war };
 
 //Game settings
 float fps = 10.0, text_fps = 7.0;
@@ -92,6 +106,13 @@ void drawGlyph(FrameCanvas* canvas, int r_orig, int c_orig, const vector<pair<in
 		canvas->SetPixel(coord.second + c_orig, coord.first + r_orig, color.r, color.g, color.b);
 }
 
+void drawObstacles(FrameCanvas *canvas) {
+	//TODO: Use data to decide how the obstacles are drawn.
+	for(Glyph g : currObstacles)
+		for(auto coord : g.getData())
+			canvas->SetPixel(coord.second + (int) g.getOrigin().second, coord.first + (int) g.getOrigin().first, color.r, color.g, color.b);
+}
+
 //Set the pixels for the two XM particles
 void drawXM(FrameCanvas* canvas) {
 	canvas->SetPixel(xmLeftX, (int) xmLeftY, color.r, color.g, color.b);
@@ -99,17 +120,49 @@ void drawXM(FrameCanvas* canvas) {
 }
 
 //Returns whether or not there is a collision and the game should end
+//We can do this in constant time by checking if the XM particle coordinates overlap
 bool checkCollision() {
-	return false; //TODO: Check whether an obstacle occupies the same spot as an XM particle
+	auto pair1 = make_pair(xmLeftX, (int) xmLeftY);
+	auto pair2 = make_pair(xmRightX, (int) xmRightY);
+	
+	return coordsSet.find(pair1) != coordsSet.end() || coordsSet.find(pair2) != coordsSet.end();
 }
 
-//Update game values that will be used to update the matrices
+//Update game values that will be used to update the matrices, and return whether the game should be over
 bool updateGame() {
 	xmLeftY += fall_rate; //Move down players every 1/3 a second
 	xmRightY += fall_rate;
 	currFrames++;
-
-	return xmLeftY >= ROWS || xmRightY >= ROWS || xmLeftY < 0.0 || xmRightY < 0.0;
+	
+	//Determine if a new glyph should spawn, then spawn one for each matrix
+	if(currFrames % SPAWN_THRESHOLD == 1) {
+		printf("Creating glyphs...\n");
+		int rand_x = rand() % 12, rand_idx = rand() % 8;
+		currObstacles.push_back(Glyph(make_pair(rand_x, COLS), allGlyphs[rand_idx], GLYPH_LENGTHS[rand_idx], true));
+		currObstacles.push_back(Glyph(make_pair(rand_x, COLS), allGlyphs[rand_idx], GLYPH_LENGTHS[rand_idx], false));
+	}
+	
+	//Update all existing glyphs. If a glyph should disappear, queue its index
+	for(size_t i = 0; i < currObstacles.size(); i++) {
+		Glyph temp = currObstacles[i];
+		if(temp.getOrigin().second + temp.getLength() < 0) {
+			toDelete.push_back(i);
+			printf("Destroying glyph...\n");
+		} else 
+			currObstacles[i].updateOrigin();
+	}
+	
+	for(int i : toDelete)
+		currObstacles.erase(currObstacles.begin() + i);
+	toDelete.clear();
+	
+	//Update the coordinate set
+	coordsSet.clear();
+	for(Glyph g : currObstacles)
+		for(auto pair : g.getData())
+			coordsSet.insert(make_pair(pair.second + g.getOrigin().second, pair.first + g.getOrigin().first));
+	
+	return checkCollision() || xmLeftY >= ROWS || xmRightY >= ROWS || xmLeftY < 0.0 || xmRightY < 0.0;
 }
 
 //Start scrolling the Game over text
@@ -128,6 +181,9 @@ void resetGame() {
 	xmRightX = hardMode ? XM2_HARD_X : XM2_X;
 	obstacleLeftX = 32.0;
 	obstacleRightX = 0;
+	coordsSet.clear();
+	currObstacles.clear();
+	toDelete.clear();
 	printf("Starting new game...\n");
 }
 
@@ -315,6 +371,7 @@ int main(int argc, char **argv) {
 
 			case GAME:
 				drawXM(offscreen_canvas);
+				drawObstacles(offscreen_canvas);
 				break;
 			default:
 				x = updateScrollText(offscreen_canvas, the_font, x, idleLine.c_str());
@@ -335,4 +392,3 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
-

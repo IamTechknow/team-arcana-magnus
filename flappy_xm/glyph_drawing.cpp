@@ -2,6 +2,9 @@
 
 using namespace std;
 
+//One-to-one correspondence with glyphs and their lengths on the matrix
+static const int GLYPH_LENGTHS[8] = {9, 5, 5, 5, 7, 7, 8, 9};
+
 //Array of coordinates to draw glyphs in Row-Major form.
 //They start at 0 and can be offset to be draw in both matrices.
 static const vector<pair<int, int>> knowledge = {
