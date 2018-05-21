@@ -20,7 +20,7 @@ class ButtonWorker(object):
         state = self.gpio.input(pin)
         self.queue.put(EventClick)
         
-    def process(self):
+    def check(self):
         result = False
         while not (self.queue.empty()):
             m = self.queue.get_nowait()
