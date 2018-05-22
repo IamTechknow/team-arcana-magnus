@@ -25,6 +25,13 @@ A central device serves as the subscriber for the Techultu API and the publisher
 | Portal Damaged   | portal/portalDamaged   |
 | Portal Recharged | portal/portalRecharged |
 
+## Glyph information
+| Puzzle            | Glyphs           |
+| ----------------- |------------------|
+| Passcode Decoding | Search, Answer   |
+| Low Tech          | Gain, Unbounded  |
+| Two Player        | Knowledge, Idea  |
+
 ## Setup Information
 Uses a Raspberry Pi 3 Model B with Stretch Lite, 16 GB microSD card
 Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev autoconf libtool ola ola-python (Only for 2.7)
