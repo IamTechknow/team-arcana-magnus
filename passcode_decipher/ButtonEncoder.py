@@ -14,7 +14,7 @@ class ButtonWorker(object):
         self.gpio.setmode(GPIO.BCM)
         
         self.gpio.setup(self.pin, self.gpio.IN, pull_up_down=self.gpio.PUD_UP)
-        self.gpio.add_event_detect(self.pin, GPIO.RISING, callback=self.Call, bouncetime=50)
+        self.gpio.add_event_detect(self.pin, GPIO.RISING, callback=self.Call, bouncetime=500)
         
     def Call(self, pin):
         state = self.gpio.input(pin)

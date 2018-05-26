@@ -5,32 +5,34 @@ from algorithm import Algorithm
 from algorithm import AlgorithmType
 
 class AlgorithmChooser(object):
-    def __init__(self, screen, pins, positions, algos, color):
+    def __init__(self, screen, pins, positions, color):
         self.queue = Queue()
         self.rotary = RotaryEncoder.RotaryEncoderWorker(pins[0], pins[1], pins[2], self.queue)
         self.position = 0
         self.screen = screen
         self.positions = positions
-        self.algos = algos
+        
         self.current_color = color
         
-        label = Consts.FONT.render(self.algos[0].value, 1, Consts.RED)
-        screen.blit(label, self.positions[0])
-        self.text = ""
+        
+            
+    
+    def activate(self, text, algos, algo_id):
+        self.algos = algos
+        label = Consts.FONT.render(self.algos[0].value, 1, self.current_color)
+        self.screen.blit(label, (self.positions[0][0] - label.get_rect().width / 2, self.positions[0][1]))
         self.selected_algo_id = -1
+        
             
         for x in range(1, 6):
             label = Consts.FONT.render(self.algos[x].value, 1, Consts.WHITE)
-            screen.blit(label, self.positions[x])
-            
-    
-    def activate(self, text, algo_id):
+            self.screen.blit(label, (self.positions[x][0] - label.get_rect().width / 2, self.positions[x][1]))
         self.text = text
         self.selected_algo_id = algo_id
-        
+        self.position = 0
         crypted = Algorithm().encrypt(self.algos[self.selected_algo_id], self.text)
-        label = Consts.FONT.render(crypted, 1, self.current_color)
-        self.screen.blit(label, self.positions[6])
+        label = Consts.MESSAGE_FONT.render(crypted, 1, self.current_color)
+        self.screen.blit(label, (self.positions[6][0] - label.get_rect().width / 2, self.positions[6][1]))
         
     
     def check(self, color):
@@ -57,12 +59,12 @@ class AlgorithmChooser(object):
         return (self.selected_algo_id == self.position)
     
     def change_colored(self, direction):
-        label = Consts.FONT.render(self.algos[self.position].value, 1, Consts.RED)
-        self.screen.blit(label, self.positions[self.position])
+        label = Consts.FONT.render(self.algos[self.position].value, 1, self.current_color)
+        self.screen.blit(label, (self.positions[self.position][0] - label.get_rect().width / 2, self.positions[self.position][1]))
 
         if (direction == 1):
             prev = (self.position - 1) % 6
         else:
             prev = (self.position + 1) % 6
         label = Consts.FONT.render(self.algos[prev].value, 1, Consts.WHITE)
-        self.screen.blit(label, self.positions[prev])        
+        self.screen.blit(label, (self.positions[prev][0] - label.get_rect().width / 2, self.positions[prev][1]))        

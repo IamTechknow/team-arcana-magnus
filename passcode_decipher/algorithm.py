@@ -2,6 +2,10 @@ from enum import Enum
 import codecs
 from math import fmod
 import Consts
+import re
+import binascii
+import base64
+import random
 
 class AlgorithmType(Enum) :
     VIGENERE = "VIGENERE"
@@ -9,8 +13,11 @@ class AlgorithmType(Enum) :
     ATBASH = "ATBASH"
     BASE64 = "BASE64"
     COLTRANS = "COLTRANS" #Column Trasposition
-    NONE = "NONE"
-    
+    REVERSE = "REVERSE"
+    KBMIRROR = "KB_MIRROR"
+    POLYBIUS = "POLYBIUS"
+    LETTERTONUMBER = "LETTER_NUMBER"
+    BINARY = "BINARY"
     
 class Algorithm:
     ALPHA = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -20,19 +27,26 @@ class Algorithm:
     def split_len(self, seq, length):
         return [seq[i:i + length] for i in range(0, len(seq), length)]
     
-    def get_algo_list(self):
-        list = [AlgorithmType.VIGENERE, AlgorithmType.ROT13, AlgorithmType.ATBASH, AlgorithmType.BASE64, AlgorithmType.COLTRANS, AlgorithmType.NONE]
-        return list
+    def get_algo_list(self, level):
+        full_list = [e for e in AlgorithmType]
+        print(full_list)
+        my_randoms = random.sample(full_list, 6)
+        #list = [AlgorithmType.BASE64, AlgorithmType.BASE64, AlgorithmType.BASE64, \
+        #        AlgorithmType.BASE64, AlgorithmType.BASE64, AlgorithmType.BASE64]
+#        list = [AlgorithmType.BINARY, AlgorithmType.BINARY,AlgorithmType.BINARY, \
+#                AlgorithmType.BINARY, AlgorithmType.BINARY, AlgorithmType.BINARY]
+        return my_randoms
     
     
     def encrypt(self, type, value):
-        print(str(type))
+        print(str(type) + " -" + value)
         if (type is AlgorithmType.ROT13) :
             return codecs.encode(value, 'rot_13')
-        if (type is AlgorithmType.BASE64) :
-            value = codecs.encode(value, 'unicode_internal')
-            return "ERROR B64"
-        if (type is AlgorithmType.VIGENERE) :
+        elif (type is AlgorithmType.BASE64) :
+            #value = codecs.encode(value, 'unicode_internal')
+            cipher = base64.b64encode(value.encode('utf-8'))
+            return cipher
+        elif (type is AlgorithmType.VIGENERE) :
             key = Consts.CRYPTO_KEY_LETTERS
             alpha = ""
             for printable in range(Algorithm.ascii_min, Algorithm.ascii_max+1):
@@ -57,14 +71,14 @@ class Algorithm:
                 out += letter
 
             return out
-        if (type is AlgorithmType.ATBASH) :
+        elif (type is AlgorithmType.ATBASH) :
             cipher = ""
             for i in value:
                 print(i)
                 index = Algorithm.ALPHA.index(i)
                 cipher += Algorithm.ALPHA[abs(len(Algorithm.ALPHA) - index - 1) % len(Algorithm.ALPHA)]
             return cipher
-        if (type is AlgorithmType.COLTRANS) :
+        elif (type is AlgorithmType.COLTRANS) :
             key = Consts.CRYPTO_KEY_NUM
             order = {
                 int(val): num for num, val in enumerate(key)
@@ -79,5 +93,70 @@ class Algorithm:
                         continue
 
             return ciphertext
-        return value
+        elif (type is AlgorithmType.REVERSE):
+            return value[::-1]
+        elif (type is AlgorithmType.KBMIRROR):
+            s1 = "1234567890qwertyuiopasdfghjkl;zxcvbnm,./"
+            s2 = "qwertyuiop1234567890zxcvbnm,./asdfghjkl;"
+            result = ""
+            for i in value.lower():
+                position = s1.find(i)
+                print(str(i) + str(position))
+                result+= s2[position]
+            return result
+        elif (type is AlgorithmType.POLYBIUS):
+            result = "TODO"
+            array = self.generate_polybius_array("")
+            print(array)
+            cipher = ''
+
+
+            for word in value.upper():
+                for i in range(len(array)):
+                    if word in array[i]:
+                        oy = str(i + 1)
+                        ox = str((array[i].index(word) + 1))
+                        cipher += oy + ox
+
+            return " ".join(cipher[i:i + 2] for i in range(0, len(cipher), 2))
+        elif (type is AlgorithmType.LETTERTONUMBER):
+            result = ""
+            for  char in value:
+                temp = 1 + self.ALPHA.index(char)
+                if (temp < 10):
+                    result += "0" + str(temp)
+                else:
+                    result += str(temp)
+            return " ".join(result[i:i + 2] for i in range(0, len(result), 2))
+        elif (type is AlgorithmType.BINARY):
+            bits = bin(int(binascii.hexlify(value.encode('utf-8', 'surrogatepass')), 16))[2:]
+            return bits.zfill(8 * ((len(bits) + 7) // 8))
+        else:
+            return value
+        
+    def generate_polybius_array(self,key=''):
+
+        """Create Polybius square with transposition.
+        :param key: transposition word
+        :return: array
+        """
+        alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'
+        array = []
+        _tmp = []
+        key = re.sub(r'[^a-zA-Z]+', '', key)  # remove non-alpha character
+        key = key.upper()
+
+        if key:
+            for k in key:
+                alphabet = alphabet.replace(k, '')
+
+            alphabet = key + alphabet
+
+        for y in range(5):
+            for x in range(5):
+                _tmp.append(alphabet[0 + 5 * y + x])
+            array.append(_tmp)
+            _tmp = []
+        print(array)
+        return array
     
