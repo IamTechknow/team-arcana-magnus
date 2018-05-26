@@ -8,10 +8,10 @@ import base64
 import random
 
 class AlgorithmType(Enum) :
-    VIGENERE = "VIGENERE"
+    #VIGENERE = "VIGENERE"
     ROT13 = "ROT13"
     ATBASH = "ATBASH"
-    BASE64 = "BASE64"
+    #BASE64 = "BASE64"
     COLTRANS = "COLTRANS" #Column Trasposition
     REVERSE = "REVERSE"
     KBMIRROR = "KB_MIRROR"
@@ -30,12 +30,12 @@ class Algorithm:
     def get_algo_list(self, level):
         full_list = [e for e in AlgorithmType]
         print(full_list)
-        my_randoms = random.sample(full_list, 6)
+        list = random.sample(full_list, 6)
         #list = [AlgorithmType.BASE64, AlgorithmType.BASE64, AlgorithmType.BASE64, \
         #        AlgorithmType.BASE64, AlgorithmType.BASE64, AlgorithmType.BASE64]
-#        list = [AlgorithmType.BINARY, AlgorithmType.BINARY,AlgorithmType.BINARY, \
-#                AlgorithmType.BINARY, AlgorithmType.BINARY, AlgorithmType.BINARY]
-        return my_randoms
+        #list = [AlgorithmType.BINARY, AlgorithmType.BINARY,AlgorithmType.BINARY, \
+        #        AlgorithmType.BINARY, AlgorithmType.BINARY, AlgorithmType.BINARY]
+        return list
     
     
     def encrypt(self, type, value):

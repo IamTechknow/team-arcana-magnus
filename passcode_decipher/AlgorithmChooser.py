@@ -11,12 +11,8 @@ class AlgorithmChooser(object):
         self.position = 0
         self.screen = screen
         self.positions = positions
-        
         self.current_color = color
         
-        
-            
-    
     def activate(self, text, algos, algo_id):
         self.algos = algos
         label = Consts.FONT.render(self.algos[0].value, 1, self.current_color)
@@ -31,7 +27,7 @@ class AlgorithmChooser(object):
         self.selected_algo_id = algo_id
         self.position = 0
         crypted = Algorithm().encrypt(self.algos[self.selected_algo_id], self.text)
-        label = Consts.MESSAGE_FONT.render(crypted, 1, self.current_color)
+        label = Consts.MESSAGE_FONT.render(crypted[:20], 1, self.current_color)
         self.screen.blit(label, (self.positions[6][0] - label.get_rect().width / 2, self.positions[6][1]))
         
     

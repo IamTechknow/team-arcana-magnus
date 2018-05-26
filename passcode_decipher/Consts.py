@@ -66,17 +66,20 @@ STATE_WIN_DISPLAY = 4
 MESSAGE_FONT = pygame.font.SysFont("monospace", 40, bold = True)
 STARTUP_TEXTS = ["GLYPHS HUNTING TIME !", \
                  "As a Glyph hunter, you have to discover what glyphs ","are hidden in this game.", \
-                 "You have to find how was encrypted","some series of 3 glyphs.", \
+                 "You have to find how was encrypted","", "","", "", "", "some series of 3 glyphs.", \
                  "Then in a ultimate step, your glyphing capabilities", "will help you find the final 2 glyphs"]
-STARTUP_TEXT_POSITION_X = 20
 STARTUP_TEXT_POSITION_Y = 50
 
-HELP_TEXT = "Choose algorithm with Rotary and validate with BUTTON"
+MAX_TRIES = 5
+
+HELP_TEXT = ["Choose the 3 algorithm with Rotary", " and validate with BUTTON.You have " + str(MAX_TRIES) + " 5 tries"]
 HELP_TEXT_POSITION_Y = 600
 
-WON_TEXTS= ["You FOUND 6 GLYPHS BUT not the one you need", "___ DATA DISCOVER PATH","DEFEND MESSAGE ___ IDEA"]
-WON_TEXT_POSITION_X = 20
-WON_TEXT_POSITION_Y = 50
+FIRST_OK_TEXT = "You resolved first serie, let's do the second"
 
-MQTT_SERVER = ""
-MQTT_PORT = 0
+WON_TEXTS= ["You FOUND 6 GLYPHS BUT not the one you need", "____ DATA DISCOVER PATH","DEFEND MESSAGE ____ IDEA"]
+WON_TEXT_POSITION_Y = 150
+
+MQTT_SERVER = "192.168.1.121"
+MQTT_PORT = 1883
+
