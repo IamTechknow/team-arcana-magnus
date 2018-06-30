@@ -16,12 +16,13 @@ volatile uint8 glyphCount, nodeCount, lastNode;
 uint8 currGlyphs[NUM_GLYPHS][NUM_NODES]; //Glyph node values are one-indexed
 
 //Button interrupt. Interrupts need to be cleared in the ISR
-//It is possible for the variable to be more than one, so it gets reset when read
+//It is possible for the variable to be more than one, but not by the interrupt
+//so it gets reset when read
 CY_ISR(ButtonISR) {
     if(state != SOLVED || state != FAILED) {
-        buttonPressed++;
+        buttonPressed = 1;
     }
-    ButtonPin_ClearInterrupt();
+    ButtonInt_ClearPending();
 }
 
 //IR Port 1 interrupt, falling edge
@@ -68,11 +69,11 @@ uint8 checkGlyphs() { //Form bit vector based on result
     uint8 result = 0;
     
     result |= checkGlyph(currGlyphs[0], getBodyGlyph()) << 0;
-    result |= checkGlyph(currGlyphs[1], getAnswerGlyph()) << 1;
-    result |= checkGlyph(currGlyphs[2], getGainGlyph()) << 2;
-    result |= checkGlyph(currGlyphs[3], getUnboundedGlyph()) << 3;
-    result |= checkGlyph(currGlyphs[4], getKnowledgeGlyph()) << 4;
-    result |= checkGlyph(currGlyphs[5], getIdeaGlyph()) << 5;
+//    result |= checkGlyph(currGlyphs[1], getAnswerGlyph()) << 1;
+//    result |= checkGlyph(currGlyphs[2], getGainGlyph()) << 2;
+//    result |= checkGlyph(currGlyphs[3], getUnboundedGlyph()) << 3;
+//    result |= checkGlyph(currGlyphs[4], getKnowledgeGlyph()) << 4;
+//    result |= checkGlyph(currGlyphs[5], getIdeaGlyph()) << 5;
     
     return result;
 }
@@ -100,7 +101,6 @@ void setLEDsInGame() {
         if(currGlyphs[glyphCount][i]) 
             mask |= (1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
     Port_3_Write(mask & 0xff);
-    //Write the last 3 bits here
     
     uint16 mask_2 = 0;
     for(int i = 8; i < NUM_NODES; i++) 
@@ -127,7 +127,7 @@ void showFailedGlyph() {
         Port_3_Write(0);
         Port_12_Write(0);
         CyDelay(500);
-        Port_3_Write(0b11111110);
+        Port_3_Write(0b11111111);
         Port_12_Write(0b00000111);
         CyDelay(500);
     }
@@ -135,7 +135,7 @@ void showFailedGlyph() {
 }
 
 void updateFSM() {
-    if(state == INIT && buttonPressed >= 1) { //New game, reset variables
+    if(state == INIT && buttonPressed == 1) { //New game, reset variables
         state = GAME;
         buttonPressed = 0;
         nodeCount = 0;
