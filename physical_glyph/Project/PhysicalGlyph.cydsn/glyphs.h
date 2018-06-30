@@ -2,7 +2,7 @@
 #define _GLYPH_H_
 
 #include "project.h"
-#define NUM_GLYPHS 1
+#define NUM_GLYPHS 6
 #define NUM_NODES 11
 
 //Functions that return glyphs

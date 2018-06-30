@@ -14,6 +14,8 @@ volatile uint8 buttonPressed;
 //Indices for glyph, node, and value of last Node
 volatile uint8 glyphCount, nodeCount, lastNode;
 uint8 currGlyphs[NUM_GLYPHS][NUM_NODES]; //Glyph node values are one-indexed
+uint8 currLEDStatus[NUM_NODES];
+uint8 IRMap[] = {1, 2, 9, 0, 4, 5, 3, 6, 7, 8, 10}; //Map 0-index detectors to 0-index LED positions (e.g. detector 2+1 is at position 9)
 
 //Button interrupt. Interrupts need to be cleared in the ISR
 //It is possible for the variable to be more than one, but not by the interrupt
@@ -37,11 +39,11 @@ CY_ISR(IRPortISR) {
     
     //update the current glyph
     if(nodeCount < NUM_NODES && ir_idx < 8 && ir_idx != lastNode) {
-        currGlyphs[glyphCount][nodeCount] = ir_idx + 1; //IR index is 1-indexed
+        currGlyphs[glyphCount][nodeCount] = IRMap[ir_idx] + 1; //IR index is 1-indexed
+        currLEDStatus[ir_idx] = 1;
         nodeCount++;
         lastNode = ir_idx;
     }
-    
     IR_detector_ClearInterrupt();
 }
 
@@ -57,11 +59,11 @@ CY_ISR(IRPort5ISR) {
     //update the current glyph for the last 3 nodes
     ir_idx += 8; //Either detector 8, 9, or 10
     if(nodeCount < NUM_NODES && ir_idx < 11 && ir_idx != lastNode) {
-        currGlyphs[glyphCount][nodeCount] = ir_idx + 1; //IR index is 1-indexed
+        currGlyphs[glyphCount][nodeCount] = IRMap[ir_idx] + 1; //IR index is 1-indexed
+        currLEDStatus[ir_idx] = 1;
         nodeCount++;
         lastNode = ir_idx;
     }
-    
     IR_detector_2_ClearInterrupt();
 }
 
@@ -90,39 +92,38 @@ void processButtonInGame() {
         buttonPressed = 0;
         nodeCount = 0;
         glyphCount++;
+        memset(currLEDStatus, 0, NUM_NODES); //zero out LEDs
     }
 }
 
 //Turn on the LEDs that for IR detectors that have detected IR
 void setLEDsInGame() {
-    uint16 mask = 0;
+    uint16 mask = 0, mask_2 = 0;
     
-    for(int i = 0; i < NUM_NODES; i++) 
-        if(currGlyphs[glyphCount][i]) 
-            mask |= (1 << (currGlyphs[glyphCount][i] - 1) ); //IR index is 1-indexed 
+    for(int i = 0; i < 8; i++)
+        if(currLEDStatus[i])
+            mask |= (1 << (i) );
     Port_3_Write(mask & 0xff);
     
-    uint16 mask_2 = 0;
-    for(int i = 8; i < NUM_NODES; i++) 
-        if(currGlyphs[glyphCount][i]) 
-            mask_2 |= (1 << (currGlyphs[glyphCount][i] - 1 - 8) ); //IR index is 1-indexed 
+    for(int i = 8; i < NUM_NODES; i++)
+        if(currLEDStatus[i])
+            mask_2 |= (1 << (i - 8) );
     Port_12_Write(mask_2 & 0xff);
 }
 
-void showUseGlyph() {
-    //For now, blink lights for 2 seconds
-    Port_12_Write(0);
-    for(int i = 0; i < 2; i++) {
+void showUseGlyph() { //For now, blink lights for 2 seconds
+    for(int i = 0; i < 10; i++) {
         Port_3_Write(0);
-        CyDelay(500);
-        Port_3_Write(0b10100010);
-        CyDelay(500);
+        Port_12_Write(0);
+        CyDelay(100);
+        Port_3_Write(0b00100010);
+        Port_12_Write(0b00000001);
+        CyDelay(100);
     }
     state = INIT;
 }
 
-void showFailedGlyph() {
-    //For now, blink lights for 2 seconds
+void showFailedGlyph() { //For now, blink lights for 2 seconds
     for(int i = 0; i < 2; i++) {
         Port_3_Write(0);
         Port_12_Write(0);
@@ -142,6 +143,7 @@ void updateFSM() {
         glyphCount = 0;
         lastNode = 0xFF; //0 is used for first pin in port
         
+        memset(currLEDStatus, 0, NUM_NODES);
         for(int i = 0; i < NUM_GLYPHS; i++) //reset glyph data
             memset(currGlyphs[i], 0, NUM_NODES);
     } else if(state == GAME && glyphCount == NUM_GLYPHS) {
