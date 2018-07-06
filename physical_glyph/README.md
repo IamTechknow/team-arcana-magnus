@@ -28,13 +28,15 @@ In other words, hand gestures are used to draw glyphs, not finger swipes!
 | Idea      |
 
 ## Materials
-* Plate of laser cuttable material. Could be foamcore, MDF, acrylic
+* Wooden or card board to cut holes that resemble a glyph interface pattern.
 * Microcontroller with lots of ports, either a PSoC 5LP or Arduino Mega 2560
-* Perfboards, soldering material
-* 20-26 gauge solid core wiring… and lots of it
+* Fabricated PCBs, solder, solder paste, and an iron
+* 22 and 24 gauge solid core wiring
 * An actuator (servo or motor) and H-Bridge if motor is needed
+* Push Button
 * IR detection circuit materials:
    * Phototransistors
+   * IR Emitter
    * LM339 Comparator
    * Op-Amps
    * Resistors
@@ -51,3 +53,6 @@ The microcontroller program can transition through three states, the idle or def
 To check if the drawn glyph is correct, we can define our own glyph definitions and check whether or not a drawn glyph is the same by putting all drawn nodes into a simple boolean array that can act as a set. This also means order will not matter here unlike in Ingress. All correct glyphs will have no more than 11 nodes to connect, so if a user draws a glyph with more than 11 glyphs it cannot be valid.
 
 If possible we can try to record how long the button is pressed by using both rising and falling interrupts to be able to implement an undo function.
+
+## AAR
+An [AAR](https://docs.google.com/document/d/1Uy8Y4W4OLF-Iq5YLK9eRnNFhhYjXUx_bJ7s4a8xR_as/edit#) has been written detailing the bring up of this project component.

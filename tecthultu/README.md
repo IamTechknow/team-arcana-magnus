@@ -39,6 +39,6 @@ python3 manage.py runserver <IP Address of the device in the network>:8000
 ```
 
 ## Setup Information
-Uses a Raspberry Pi 3 Model B with Stretch Lite, 16 GB microSD card
-Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev autoconf libtool ola ola-python (Only for 2.7)
-Python modules: django paho-mqtt protobuf
+Uses a Raspberry Pi 3 Model B with Stretch Lite, 16 GB microSD card <br />
+Packages installed for Mosquitto and Python: git libwrap0-dev libssl-dev libc-ares-dev uuid-dev xsltproc mosquitto-clients libmosquitto1 libmosquittopp1 python-pip python3-pip python3-gi python-dev python3-dev autoconf libtool ola ola-python (OLA is only for Python 2.7) <br />
+Python 3 modules: django paho-mqtt protobuf
